@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:ln_alerts/ln_alerts.dart';
-import 'package:ln_alerts/src/defaults.dart';
-import 'package:ln_alerts/src/locales/ln_alerts_locale.dart';
 import 'package:ln_core/ln_core.dart';
+
+import 'alert.dart';
+import 'defaults.dart';
+import 'locales/ln_alerts_locale.dart';
+import 'models/alert_position.dart';
+import 'models/alert_type.dart';
+import 'widgets/flat_alert.dart';
+import 'widgets/notification_alert.dart';
+import 'widgets/rectangular_alert.dart';
 
 class LnAlertManager extends InheritedWidget {
   final LnAlertHostState data;
@@ -14,14 +20,16 @@ class LnAlertManager extends InheritedWidget {
   });
 
   static LnAlertHostState of(BuildContext context) {
-    var host =
-        context.dependOnInheritedWidgetOfExactType<LnAlertManager>()?.data;
+    var host = maybeOf(context);
     if (host == null) {
       throw Exception("No LnAlertHost found in this context.");
     }
 
     return host;
   }
+
+  static LnAlertHostState? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<LnAlertManager>()?.data;
 
   @override
   bool updateShouldNotify(LnAlertManager oldWidget) => oldWidget.data != data;
@@ -31,8 +39,10 @@ class LnAlertHost extends StatefulWidget {
   final Duration? defaultDuration;
   final AlertPosition defaultPosition;
   final bool defaultColorFilled;
-  final String? defaultButtonText;
   final Map<AlertType, LnAlertDecoration> defaultDecorations;
+  final Color defaultDarkScrimColor;
+  final Color defaultLightScrimColor;
+  final double? defaultNotificationAlertMaxWidth;
 
   final WidgetBuilder? builder;
 
@@ -41,8 +51,11 @@ class LnAlertHost extends StatefulWidget {
     this.defaultDuration = LnAlertDefaults.duration,
     this.defaultPosition = LnAlertDefaults.position,
     this.defaultColorFilled = LnAlertDefaults.colorFilled,
-    this.defaultButtonText,
+    this.defaultLightScrimColor = LnAlertDefaults.lightScrimColor,
+    this.defaultDarkScrimColor = LnAlertDefaults.darkScrimColor,
     this.defaultDecorations = LnAlertDefaults.decorations,
+    this.defaultNotificationAlertMaxWidth =
+        LnAlertDefaults.notificationAlertMaxWidth,
     required this.builder,
   });
 
@@ -64,13 +77,14 @@ class LnAlertHostState extends State<LnAlertHost> {
     final dur = duration ?? widget.defaultDuration;
 
     assert(alerts[pos] != null);
+    if (alerts[pos]!.contains(alert)) return;
 
     alerts[pos]!.add(alert);
     setState(() {});
     if (dur != null) {
       Future.delayed(dur, () {
         setState(() {
-          alerts[pos]?.remove(alert);
+          alerts[pos]!.remove(alert);
         });
       });
     }
@@ -117,13 +131,15 @@ class LnAlertHostState extends State<LnAlertHost> {
               alerts[AlertPosition.overCenter]?.isNotEmpty == true ||
               alerts[AlertPosition.overBottom]?.isNotEmpty == true) {
             child = Stack(
+              alignment: Alignment.topRight,
               children: [
                 if (child != null) child,
                 if (alerts[AlertPosition.overTop]?.isNotEmpty == true)
                   Container(
-                    alignment: Alignment.topCenter,
+                    alignment: Alignment.topRight,
                     padding: padding,
                     child: SpacedColumn(
+                      mainAxisSize: MainAxisSize.min,
                       spacing: 4,
                       children: [
                         for (var alert in alerts[AlertPosition.overTop]!)
@@ -133,9 +149,10 @@ class LnAlertHostState extends State<LnAlertHost> {
                   ),
                 if (alerts[AlertPosition.overBottom]?.isNotEmpty == true)
                   Container(
-                    alignment: Alignment.bottomCenter,
+                    alignment: Alignment.bottomRight,
                     padding: padding,
                     child: SpacedColumn(
+                      mainAxisSize: MainAxisSize.min,
                       spacing: 4,
                       children: [
                         for (var alert in alerts[AlertPosition.overBottom]!)
@@ -149,14 +166,9 @@ class LnAlertHostState extends State<LnAlertHost> {
                       alignment: Alignment.center,
                       padding: padding,
                       color: Theme.of(context).brightness == Brightness.light
-                          ? const Color(0x20000000)
-                          : const Color(0x20FFFFFF),
-                      child: SquareAlert(
-                        alert: alert,
-                        card: true,
-                        buttonText: "OK",
-                        onPressed: () {},
-                      ),
+                          ? widget.defaultLightScrimColor
+                          : widget.defaultDarkScrimColor,
+                      child: RectangularAlert(alert: alert),
                     ),
               ],
             );

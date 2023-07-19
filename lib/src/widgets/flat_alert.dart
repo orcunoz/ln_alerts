@@ -10,9 +10,6 @@ class FlatAlert extends LnAlertWidget {
   const FlatAlert({
     super.key,
     required super.alert,
-    super.colorFilled,
-    super.buttonText,
-    super.onPressed,
     this.hasTopBorder = false,
     this.hasBottomBorder = false,
     this.additionalPadding,
@@ -23,8 +20,7 @@ class FlatAlert extends LnAlertWidget {
     final effectiveData = this.effectiveData(context);
     final borderSide = BorderSide(
       width: .5,
-      color: effectiveData.backgroundColor
-          .blend(effectiveData.foregroundColor, 50),
+      color: effectiveData.foregroundColor.withOpacity(.5),
     );
     final textStyle = TextStyle(
       color: effectiveData.foregroundColor,
@@ -50,7 +46,7 @@ class FlatAlert extends LnAlertWidget {
     }
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 18, vertical: 12) +
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12) +
           (additionalPadding == null ? EdgeInsets.zero : additionalPadding!),
       decoration: BoxDecoration(
         color: effectiveData.backgroundColor,
@@ -65,19 +61,10 @@ class FlatAlert extends LnAlertWidget {
           Icon(
             effectiveData.icon,
             color: effectiveData.foregroundColor,
-            size: 32,
+            size: 28,
           ),
           Expanded(child: child),
-          if (buttonText != null)
-            TextButton(
-              onPressed: onPressed,
-              style:
-                  ButtonStyle(tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-              child: Text(
-                buttonText!,
-                style: textStyle,
-              ),
-            ),
+          for (var button in alert.buttons) button,
         ],
       ),
     );

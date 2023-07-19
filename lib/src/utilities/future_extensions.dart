@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:ln_alerts/ln_alerts.dart';
+import 'package:ln_core/ln_core.dart';
 
-import 'package:ln_core/src/utils/logger.dart';
+import '../alert.dart';
+import '../host.dart';
 
 extension LnAlertFutureExtensions<T> on Future<T> {
   Future<T> manageAlerts(BuildContext context) {
