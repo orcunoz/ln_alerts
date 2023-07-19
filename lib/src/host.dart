@@ -10,10 +10,10 @@ import 'widgets/flat_alert.dart';
 import 'widgets/notification_alert.dart';
 import 'widgets/rectangular_alert.dart';
 
-class LnAlertManager extends InheritedWidget {
+class LnAlerts extends InheritedWidget {
   final LnAlertHostState data;
 
-  const LnAlertManager({
+  const LnAlerts({
     super.key,
     required this.data,
     required super.child,
@@ -29,10 +29,10 @@ class LnAlertManager extends InheritedWidget {
   }
 
   static LnAlertHostState? maybeOf(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<LnAlertManager>()?.data;
+      context.dependOnInheritedWidgetOfExactType<LnAlerts>()?.data;
 
   @override
-  bool updateShouldNotify(LnAlertManager oldWidget) => oldWidget.data != data;
+  bool updateShouldNotify(LnAlerts oldWidget) => oldWidget.data != data;
 }
 
 class LnAlertHost extends StatefulWidget {
@@ -95,7 +95,7 @@ class LnAlertHostState extends State<LnAlertHost> {
 
   @override
   Widget build(BuildContext context) {
-    return LnAlertManager(
+    return LnAlerts(
       data: this,
       child: Builder(
         builder: (context) {

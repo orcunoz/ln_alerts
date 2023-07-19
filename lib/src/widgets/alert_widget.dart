@@ -51,7 +51,7 @@ class LnEffectiveAlertWidgetData {
 
   factory LnEffectiveAlertWidgetData(BuildContext context, LnAlert alert) {
     final brightness = Theme.of(context).brightness;
-    final host = LnAlertManager.maybeOf(context)?.widget;
+    final host = LnAlerts.maybeOf(context)?.widget;
     final hostDecorationDefaults = host?.defaultDecorations[alert.type];
     final decorationDefaults = LnAlertDefaults.decorations[alert.type];
 

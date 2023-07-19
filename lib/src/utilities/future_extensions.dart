@@ -3,35 +3,42 @@ import 'package:ln_core/ln_core.dart';
 
 import '../alert.dart';
 import '../host.dart';
+import '../models/alert_position.dart';
 
 extension LnAlertFutureExtensions<T> on Future<T> {
-  Future<T> manageAlerts(BuildContext context) {
-    final host = LnAlertManager.of(context);
+  Future<T> manageAlerts(BuildContext context, {AlertPosition? position}) {
+    final host = LnAlerts.of(context);
     return this
-      .._manageSuccessAlerts(host)
-      .._manageErrorAlerts(host);
+      .._manageSuccessAlerts(host, position ?? host.widget.defaultPosition)
+      .._manageErrorAlerts(host, position ?? host.widget.defaultPosition);
   }
 
-  Future<T> _manageSuccessAlerts(LnAlertHostState host) {
+  Future<T> manageSuccessAlerts(BuildContext context,
+      {AlertPosition? position}) {
+    final host = LnAlerts.of(context);
+    return _manageSuccessAlerts(host, position ?? host.widget.defaultPosition);
+  }
+
+  Future<T> manageErrorAlerts(BuildContext context, {AlertPosition? position}) {
+    final host = LnAlerts.of(context);
+    return _manageErrorAlerts(host, position ?? host.widget.defaultPosition);
+  }
+
+  Future<T> _manageSuccessAlerts(
+      LnAlertHostState host, AlertPosition position) {
     return this
       ..then((value) {
-        host.show(LnAlert.successAutoDetect(value));
+        host.show(LnAlert.successAutoDetect(value), position: position);
         return value;
       });
   }
 
-  Future<T> manageSuccessAlerts(BuildContext context) =>
-      _manageSuccessAlerts(LnAlertManager.of(context));
-
-  Future<T> _manageErrorAlerts(LnAlertHostState host) {
+  Future<T> _manageErrorAlerts(LnAlertHostState host, AlertPosition position) {
     return this
       ..catchError((error, stackTrace) {
         Log.e(error, stackTrace: stackTrace);
-        host.show(LnAlert.errorAutoDetect(error));
+        host.show(LnAlert.errorAutoDetect(error), position: position);
         throw error;
       });
   }
-
-  Future<T> manageErrorAlerts(BuildContext context) =>
-      _manageErrorAlerts(LnAlertManager.of(context));
 }

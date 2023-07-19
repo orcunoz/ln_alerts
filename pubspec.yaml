@@ -12,7 +12,10 @@ dependencies:
     sdk: flutter
 
   ln_core:
-    path: ../core
+    #path: ../ln_core
+    git:
+      url: https://github.com/orcunoz/ln_core
+      ref: main
 
 dev_dependencies:
   lints: ^2.0.0

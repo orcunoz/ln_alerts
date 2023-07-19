@@ -39,9 +39,9 @@ sealed class LnAlertDefaults {
   static const decorations = <AlertType, LnAlertDecoration>{
     AlertType.info: LnAlertDecoration(
       icon: Icons.info_outline_rounded,
-      lightAccentColor: Color(0xFFEBEBEB),
-      lightSecondaryColor: Color(0xFF6C6C6C),
-      darkAccentColor: Color(0xFF383838),
+      lightAccentColor: Color(0xFFf3f3f3),
+      lightSecondaryColor: Color(0xFF585858),
+      darkAccentColor: Color(0xFF282828),
       darkSecondaryColor: Color(0xFFEBEBEB),
     ),
     AlertType.success: LnAlertDecoration(

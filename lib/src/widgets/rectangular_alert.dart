@@ -60,14 +60,9 @@ class RectangularAlert extends LnAlertWidget {
     List<LnAlertActionButton> buttons = const [],
   }) : this(
           frameless: frameless,
-          alert: LnAlert(
-            lightAccentColor: Colors.grey.shade800,
-            lightSecondaryColor: Colors.grey.shade800,
-            darkAccentColor: Colors.grey.shade100,
-            darkSecondaryColor: Colors.grey.shade500,
-            icon: Icons.web_asset_off_rounded,
-            message: alertsLocalizationScope.current.noResultsFound,
+          alert: LnAlert.info(
+            alertsLocalizationScope.current.noResultsFound,
             buttons: buttons,
-          ),
+          ).copyWith(icon: Icons.web_asset_off_rounded),
         );
 }

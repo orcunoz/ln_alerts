@@ -161,8 +161,7 @@ class LnAlert {
     Duration? duration,
     AlertPosition? position,
   }) =>
-      LnAlertManager.of(context)
-          .show(this, duration: duration, position: position);
+      LnAlerts.of(context).show(this, duration: duration, position: position);
 
   LnAlert copyWith({
     AlertType? type,
