@@ -2,42 +2,39 @@ import 'package:flutter/material.dart';
 import 'package:ln_core/ln_core.dart';
 
 import '../alert.dart';
-import '../host.dart';
-import '../models/alert_position.dart';
+import '../container.dart';
 
 extension LnAlertFutureExtensions<T> on Future<T> {
-  Future<T> manageAlerts(BuildContext context, {AlertPosition? position}) {
-    final host = LnAlerts.of(context);
+  Future<T> manageAlerts(BuildContext context) {
+    final container = LnAlertContainer.of(context);
     return this
-      .._manageSuccessAlerts(host, position ?? host.widget.defaultPosition)
-      .._manageErrorAlerts(host, position ?? host.widget.defaultPosition);
+      .._manageSuccessAlerts(container)
+      .._manageErrorAlerts(container);
   }
 
-  Future<T> manageSuccessAlerts(BuildContext context,
-      {AlertPosition? position}) {
-    final host = LnAlerts.of(context);
-    return _manageSuccessAlerts(host, position ?? host.widget.defaultPosition);
+  Future<T> manageSuccessAlerts(BuildContext context) {
+    final container = LnAlertContainer.of(context);
+    return _manageSuccessAlerts(container);
   }
 
-  Future<T> manageErrorAlerts(BuildContext context, {AlertPosition? position}) {
-    final host = LnAlerts.of(context);
-    return _manageErrorAlerts(host, position ?? host.widget.defaultPosition);
+  Future<T> manageErrorAlerts(BuildContext context) {
+    final container = LnAlertContainer.of(context);
+    return _manageErrorAlerts(container);
   }
 
-  Future<T> _manageSuccessAlerts(
-      LnAlertHostState host, AlertPosition position) {
+  Future<T> _manageSuccessAlerts(LnAlertContainerState host) {
     return this
       ..then((value) {
-        host.show(LnAlert.successAutoDetect(value), position: position);
+        host.show(LnAlert.successAutoDetect(value));
         return value;
       });
   }
 
-  Future<T> _manageErrorAlerts(LnAlertHostState host, AlertPosition position) {
+  Future<T> _manageErrorAlerts(LnAlertContainerState host) {
     return this
       ..catchError((error, stackTrace) {
         Log.e(error, stackTrace: stackTrace);
-        host.show(LnAlert.errorAutoDetect(error), position: position);
+        host.show(LnAlert.errorAutoDetect(error));
         throw error;
       });
   }

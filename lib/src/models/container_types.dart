@@ -1,0 +1,4 @@
+enum ContainerTypes {
+  column,
+  stack,
+}

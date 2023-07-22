@@ -1,25 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:ln_alerts/ln_alerts.dart';
+import 'package:ln_alerts/src/style/alert_decoration.dart';
 import 'package:ln_core/ln_core.dart';
 
-import 'alert_widget.dart';
+class NotificationAlertConfig extends AlertConfig {
+  final double? width;
+  final BorderRadius? borderRadius;
+  final double? borderWidth;
+  final EdgeInsets? insets;
+  final Alignment? alignment;
+
+  const NotificationAlertConfig({
+    super.duration = const Duration(seconds: 10),
+    this.width = 400,
+    this.borderRadius = const BorderRadius.all(Radius.circular(8)),
+    this.borderWidth = .5,
+    this.insets = const EdgeInsets.all(8),
+    this.alignment = Alignment.topRight,
+  });
+}
 
 class NotificationAlert extends LnAlertWidget {
-  final BorderRadius? borderRadius;
-  final double? maxWidth;
-  final bool frameless;
+  final NotificationAlertConfig? config;
 
   const NotificationAlert({
     super.key,
     required super.alert,
-    this.borderRadius,
-    this.maxWidth,
-    this.frameless = false,
+    this.config,
   });
 
   @override
   Widget build(BuildContext context) {
-    final effectiveData = this.effectiveData(context);
-    final textStyle = TextStyle(color: effectiveData.foregroundColor);
+    final defaults = LnAlerts.of(context).notificationAlertDefaults;
+    final decoration = super.decoration ??
+        LnAlertDecoration.generate(context: context, alertType: alert.type);
+
+    final textStyle = TextStyle(color: decoration.foregroundColor);
 
     Widget child = Text(effectiveMessage, style: textStyle);
 
@@ -40,38 +56,31 @@ class NotificationAlert extends LnAlertWidget {
     child = SpacedRow(
       spacing: 8,
       children: [
-        Icon(effectiveData.icon, color: effectiveData.foregroundColor),
+        Icon(decoration.icon, color: decoration.foregroundColor),
         Expanded(child: child),
         for (var button in alert.buttons) button,
       ],
     );
 
-    final decoration = frameless
+    final constraints = defaults.width == null
         ? null
-        : BoxDecoration(
-            color: effectiveData.backgroundColor,
-            border: Border.fromBorderSide(
-              BorderSide(
-                width: .5,
-                color: effectiveData.backgroundColor
-                    .blend(effectiveData.foregroundColor, 50),
-              ),
-            ),
-            borderRadius: borderRadius ?? BorderRadius.circular(8),
-          );
+        : BoxConstraints(maxWidth: defaults.width!);
 
-    final constraints =
-        maxWidth == null ? null : BoxConstraints(maxWidth: maxWidth!);
-
-    if (decoration != null || constraints != null) {
-      child = Container(
-        padding: EdgeInsets.all(12),
-        constraints: constraints,
-        decoration: decoration,
-        child: child,
-      );
-    }
-
-    return child;
+    return Container(
+      padding: EdgeInsets.all(12),
+      constraints: constraints,
+      decoration: BoxDecoration(
+        color: decoration.backgroundColor,
+        border: Border.fromBorderSide(
+          BorderSide(
+            width: .5,
+            color: decoration.backgroundColor
+                .blend(decoration.foregroundColor, 50),
+          ),
+        ),
+        borderRadius: defaults.borderRadius ?? BorderRadius.circular(8),
+      ),
+      child: child,
+    );
   }
 }

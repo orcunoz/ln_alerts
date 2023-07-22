@@ -1,30 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:ln_core/ln_core.dart';
 
+import '../defaults.dart';
+import '../style/alert_decoration.dart';
 import 'alert_widget.dart';
 
+enum FlatAlertPosition {
+  top,
+  bottom,
+}
+
+class FlatAlertConfig extends AlertConfig {
+  final FlatAlertPosition position;
+
+  const FlatAlertConfig({
+    this.position = FlatAlertPosition.bottom,
+    super.duration = const Duration(seconds: 5),
+  });
+}
+
 class FlatAlert extends LnAlertWidget {
-  final bool hasTopBorder;
-  final bool hasBottomBorder;
-  final EdgeInsets? additionalPadding;
+  final FlatAlertConfig? config;
+
   const FlatAlert({
     super.key,
     required super.alert,
-    this.hasTopBorder = false,
-    this.hasBottomBorder = false,
-    this.additionalPadding,
+    super.decoration,
+    this.config,
   });
 
   @override
   Widget build(BuildContext context) {
-    final effectiveData = this.effectiveData(context);
+    final decoration = super.decoration ??
+        LnAlertDecoration.generate(context: context, alertType: alert.type);
+    final effectiveConfig = config ??
+        LnAlerts.maybeOf(context)?.flatAlertDefaults ??
+        FlatAlertConfig();
+
     final borderSide = BorderSide(
       width: .5,
-      color: effectiveData.foregroundColor.withOpacity(.5),
+      color: decoration.foregroundColor.withOpacity(.5),
     );
-    final textStyle = TextStyle(
-      color: effectiveData.foregroundColor,
-    );
+
+    final textStyle = TextStyle(color: decoration.foregroundColor);
 
     Widget child = Text(
       effectiveMessage,
@@ -34,6 +52,7 @@ class FlatAlert extends LnAlertWidget {
     if (alert.title != null) {
       child = SpacedColumn(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         spacing: 2,
         children: [
           Text(
@@ -46,21 +65,19 @@ class FlatAlert extends LnAlertWidget {
     }
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12) +
-          (additionalPadding == null ? EdgeInsets.zero : additionalPadding!),
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       decoration: BoxDecoration(
-        color: effectiveData.backgroundColor,
-        border: Border(
-          top: hasTopBorder ? borderSide : BorderSide.none,
-          bottom: hasBottomBorder ? borderSide : BorderSide.none,
-        ),
+        color: decoration.backgroundColor,
+        border: effectiveConfig.position == FlatAlertPosition.top
+            ? Border(bottom: borderSide)
+            : Border(top: borderSide),
       ),
       child: SpacedRow(
         spacing: 12,
         children: [
           Icon(
-            effectiveData.icon,
-            color: effectiveData.foregroundColor,
+            decoration.icon,
+            color: decoration.foregroundColor,
             size: 28,
           ),
           Expanded(child: child),

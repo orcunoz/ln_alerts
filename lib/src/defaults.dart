@@ -1,69 +1,65 @@
 import 'package:flutter/material.dart';
 
-import 'models/alert_position.dart';
-import 'models/alert_type.dart';
+import 'container.dart';
+import 'models/widget_types.dart';
+import 'style/theme.dart';
+import 'widgets/alert_widget.dart';
+import 'widgets/flat_alert.dart';
+import 'widgets/notification_alert.dart';
+import 'widgets/rectangular_alert.dart';
 
-class LnAlertDecoration {
-  final IconData? icon;
-  final Color lightAccentColor;
-  final Color lightSecondaryColor;
-  final Color darkAccentColor;
-  final Color darkSecondaryColor;
+class LnAlerts extends InheritedWidget {
+  final LnAlertsTheme lightTheme;
+  final LnAlertsTheme darkTheme;
 
-  const LnAlertDecoration({
-    this.icon,
-    required this.lightAccentColor,
-    required this.lightSecondaryColor,
-    required this.darkAccentColor,
-    required this.darkSecondaryColor,
-  });
-}
+  final FlatAlertConfig flatAlertDefaults;
+  final NotificationAlertConfig notificationAlertDefaults;
+  final RectangularAlertConfig rectangularAlertDefaults;
 
-sealed class LnAlertDefaults {
-  LnAlertDefaults._();
+  final WidgetTypes columnContainerDefaultWidget;
+  final WidgetTypes stackContainerDefaultWidget;
 
-  static const AlertPosition position = AlertPosition.bottom;
+  LnAlerts({
+    super.key,
+    this.lightTheme = const LnAlertsTheme.defaultsLight(),
+    this.darkTheme = const LnAlertsTheme.defaultsDark(),
+    this.flatAlertDefaults = const FlatAlertConfig(),
+    this.notificationAlertDefaults = const NotificationAlertConfig(),
+    this.rectangularAlertDefaults = const RectangularAlertConfig(),
+    this.columnContainerDefaultWidget = WidgetTypes.flat,
+    this.stackContainerDefaultWidget = WidgetTypes.notification,
+    required WidgetBuilder builder,
+  }) : super(
+          child: LnAlertContainer.stack(
+            childrenBuilder: (context) => [builder(context)],
+          ),
+        );
 
-  static const bool colorFilled = true;
+  AlertConfig defaultsOf(WidgetTypes type) => switch (type) {
+        WidgetTypes.flat => flatAlertDefaults,
+        WidgetTypes.notification => notificationAlertDefaults,
+        WidgetTypes.rectangular => rectangularAlertDefaults,
+      };
 
-  static const Duration duration = Duration(seconds: 5);
+  static LnAlerts of(BuildContext context) {
+    var host = maybeOf(context);
+    if (host == null) {
+      throw Exception("No LnAlerts found in this context.");
+    }
 
-  static const double rectangularAlertMinWidth = 180;
+    return host;
+  }
 
-  static const double notificationAlertMaxWidth = 400;
+  static LnAlerts? maybeOf(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<LnAlerts>();
 
-  static const lightScrimColor = Color(0x10000000);
-
-  static const darkScrimColor = Color(0x10FFFFFF);
-
-  static const decorations = <AlertType, LnAlertDecoration>{
-    AlertType.info: LnAlertDecoration(
-      icon: Icons.info_outline_rounded,
-      lightAccentColor: Color(0xFFf3f3f3),
-      lightSecondaryColor: Color(0xFF585858),
-      darkAccentColor: Color(0xFF282828),
-      darkSecondaryColor: Color(0xFFEBEBEB),
-    ),
-    AlertType.success: LnAlertDecoration(
-      icon: Icons.check_circle_outline_rounded,
-      lightAccentColor: Color(0xFFA8F1C6),
-      lightSecondaryColor: Color(0xFF198343),
-      darkAccentColor: Color(0xFF198343),
-      darkSecondaryColor: Color(0xFFA8F1C6),
-    ),
-    AlertType.warning: LnAlertDecoration(
-      icon: Icons.error_outline_rounded,
-      lightAccentColor: Color(0xFFFFD38A),
-      lightSecondaryColor: Color(0xFF8B5502),
-      darkAccentColor: Color(0xFFFEA840),
-      darkSecondaryColor: Colors.white,
-    ),
-    AlertType.error: LnAlertDecoration(
-      icon: Icons.error_outline_rounded,
-      lightAccentColor: Color(0xffF6A7A3),
-      lightSecondaryColor: Color(0xff90110E),
-      darkAccentColor: Color(0xff942F41),
-      darkSecondaryColor: Color(0xffF6A7A3),
-    ),
-  };
+  @override
+  bool updateShouldNotify(LnAlerts oldWidget) =>
+      oldWidget.lightTheme != lightTheme ||
+      oldWidget.darkTheme != darkTheme ||
+      oldWidget.flatAlertDefaults != flatAlertDefaults ||
+      oldWidget.notificationAlertDefaults != notificationAlertDefaults ||
+      oldWidget.rectangularAlertDefaults != rectangularAlertDefaults ||
+      oldWidget.columnContainerDefaultWidget != columnContainerDefaultWidget ||
+      oldWidget.stackContainerDefaultWidget != stackContainerDefaultWidget;
 }

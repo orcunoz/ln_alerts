@@ -2,25 +2,50 @@ import 'package:flutter/material.dart';
 
 import '../alert.dart';
 import '../defaults.dart';
-import '../locales/ln_alerts_locale.dart';
-import '../models/action_button.dart';
+import '../localizations/alerts_localizations.dart';
+import '../style/alert_decoration.dart';
+import 'action_button.dart';
 import 'alert_widget.dart';
 
-class RectangularAlert extends LnAlertWidget {
+class RectangularAlertConfig extends AlertConfig {
   final double? minWidth;
-  final bool frameless;
+  final BorderRadius? borderRadius;
+  final double? borderWidth;
+
+  const RectangularAlertConfig({
+    super.duration = const Duration(seconds: 10),
+    this.minWidth = 180,
+    this.borderRadius = const BorderRadius.all(Radius.circular(8)),
+    this.borderWidth = .5,
+  });
+
+  const RectangularAlertConfig.frameless({
+    super.duration = const Duration(seconds: 10),
+    this.minWidth = 180,
+  })  : borderRadius = null,
+        borderWidth = null;
+}
+
+class RectangularAlert extends LnAlertWidget {
+  final RectangularAlertConfig? config;
 
   const RectangularAlert({
     super.key,
     required super.alert,
-    this.minWidth = LnAlertDefaults.rectangularAlertMinWidth,
-    this.frameless = false,
+    this.config,
   });
 
   @override
   Widget build(BuildContext context) {
-    final effectiveData = this.effectiveData(context);
-    final textStyle = TextStyle(color: effectiveData.foregroundColor);
+    final lnAlerts = LnAlerts.of(context);
+    final decoration = super.decoration ??
+        LnAlertDecoration.generate(context: context, alertType: alert.type);
+    final typeSpecificConfig = lnAlerts.rectangularAlertDefaults;
+    final computedMinWidth = config?.minWidth ?? typeSpecificConfig.minWidth;
+    final constraints = computedMinWidth == null
+        ? null
+        : BoxConstraints(minWidth: computedMinWidth);
+    final textStyle = TextStyle(color: decoration.foregroundColor);
 
     Widget child = Column(
       mainAxisSize: MainAxisSize.min,
@@ -28,9 +53,9 @@ class RectangularAlert extends LnAlertWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(
-          effectiveData.icon,
+          decoration.icon,
           size: 64,
-          color: effectiveData.foregroundColor,
+          color: decoration.foregroundColor,
         ),
         SizedBox(height: 8),
         Text(effectiveMessage, style: textStyle),
@@ -38,16 +63,23 @@ class RectangularAlert extends LnAlertWidget {
       ],
     );
 
-    if (!frameless) {
+    if (typeSpecificConfig.borderWidth != null) {
       child = Container(
         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 18.0),
-        constraints:
-            minWidth != null ? BoxConstraints(minWidth: minWidth!) : null,
+        constraints: constraints,
         decoration: BoxDecoration(
-          color: effectiveData.backgroundColor,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(width: .5, color: effectiveData.foregroundColor),
+          color: decoration.backgroundColor,
+          borderRadius: typeSpecificConfig.borderRadius,
+          border: Border.all(
+            width: typeSpecificConfig.borderWidth ?? .5,
+            color: decoration.foregroundColor,
+          ),
         ),
+        child: child,
+      );
+    } else if (constraints != null) {
+      child = ConstrainedBox(
+        constraints: constraints,
         child: child,
       );
     }
@@ -59,10 +91,11 @@ class RectangularAlert extends LnAlertWidget {
     bool frameless = true,
     List<LnAlertActionButton> buttons = const [],
   }) : this(
-          frameless: frameless,
+          config: RectangularAlertConfig.frameless(),
           alert: LnAlert.info(
-            alertsLocalizationScope.current.noResultsFound,
+            LnAlertsLocalizations.current.noResultsFound,
+            icon: Icons.web_asset_off_rounded,
             buttons: buttons,
-          ).copyWith(icon: Icons.web_asset_off_rounded),
+          ),
         );
 }

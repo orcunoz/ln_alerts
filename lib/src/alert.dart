@@ -1,191 +1,150 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
+import 'package:ln_alerts/src/style/alert_decoration.dart';
 
-import 'host.dart';
-import 'models/action_button.dart';
-import 'models/alert_position.dart';
-import 'models/alert_type.dart';
+import 'container.dart';
+import 'models/alert_types.dart';
+import 'models/container_types.dart';
 import 'models/user_friendly_alert.dart';
+import 'models/widget_types.dart';
+import 'widgets/action_button.dart';
 
 class LnAlert {
-  final AlertType type;
+  final AlertTypes type;
   final String? title;
   final String? message;
   final IconData? icon;
-  final Color? lightAccentColor;
-  final Color? darkAccentColor;
-  final Color? lightSecondaryColor;
-  final Color? darkSecondaryColor;
-  final bool? colorFilled;
   final List<LnAlertActionButton> buttons;
+  final LnAlertDecoration? decoration;
 
   const LnAlert._({
     required this.type,
     this.title,
     this.message,
     this.icon,
-    this.lightAccentColor,
-    this.darkAccentColor,
-    this.lightSecondaryColor,
-    this.darkSecondaryColor,
-    this.colorFilled,
     this.buttons = const [],
+    this.decoration,
   });
 
   const LnAlert({
     this.title,
     required String this.message,
-    required IconData this.icon,
-    required Color this.lightAccentColor,
-    required Color this.darkAccentColor,
-    required Color this.lightSecondaryColor,
-    required Color this.darkSecondaryColor,
-    this.colorFilled,
+    this.icon,
     this.buttons = const [],
-  }) : type = AlertType.custom;
+    this.decoration,
+  }) : type = AlertTypes.custom;
 
   const LnAlert.byType({
-    required AlertType type,
+    required AlertTypes type,
     String? title,
     required String message,
-    bool? colorFilled,
+    IconData? icon,
     List<LnAlertActionButton> buttons = const [],
   }) : this._(
           type: type,
           title: title,
           message: message,
-          colorFilled: colorFilled,
+          icon: icon,
           buttons: buttons,
         );
 
   const LnAlert.info(
     String message, {
     String? title,
-    bool? colorFilled,
+    IconData? icon,
     List<LnAlertActionButton> buttons = const [],
   }) : this._(
-          type: AlertType.info,
+          type: AlertTypes.info,
           title: title,
           message: message,
-          colorFilled: colorFilled,
+          icon: icon,
           buttons: buttons,
         );
 
   const LnAlert.success(
     String message, {
     String? title,
-    bool? colorFilled,
+    IconData? icon,
     List<LnAlertActionButton> buttons = const [],
   }) : this._(
-          type: AlertType.success,
+          type: AlertTypes.success,
           title: title,
           message: message,
-          colorFilled: colorFilled,
+          icon: icon,
           buttons: buttons,
         );
 
   const LnAlert.warning(
     String message, {
     String? title,
-    bool? colorFilled,
+    IconData? icon,
     List<LnAlertActionButton> buttons = const [],
   }) : this._(
-          type: AlertType.warning,
+          type: AlertTypes.warning,
           title: title,
           message: message,
-          colorFilled: colorFilled,
+          icon: icon,
           buttons: buttons,
         );
 
   const LnAlert.error(
     String message, {
     String? title,
-    bool? colorFilled,
+    IconData? icon,
     List<LnAlertActionButton> buttons = const [],
   }) : this._(
-          type: AlertType.error,
+          type: AlertTypes.error,
           title: title,
           message: message,
-          colorFilled: colorFilled,
+          icon: icon,
           buttons: buttons,
         );
 
   LnAlert.userFriendly(
     UserFriendlyAlert data, {
-    bool? colorFilled,
     List<LnAlertActionButton> buttons = const [],
   }) : this.byType(
           type: data.alertData.type,
           title: data.alertData.title,
           message: data.alertData.message,
-          colorFilled: colorFilled,
           buttons: buttons,
         );
 
   factory LnAlert.successAutoDetect(
     dynamic data, {
-    bool? colorFilled,
     List<LnAlertActionButton> buttons = const [],
   }) =>
       data != null && data is UserFriendlyAlert
           ? LnAlert.userFriendly(
               data,
-              colorFilled: colorFilled,
               buttons: buttons,
             )
           : LnAlert._(
-              type: AlertType.success,
-              colorFilled: colorFilled,
+              type: AlertTypes.success,
               buttons: buttons,
             );
 
   factory LnAlert.errorAutoDetect(
     dynamic data, {
-    bool? colorFilled,
     List<LnAlertActionButton> buttons = const [],
   }) =>
       data != null && data is UserFriendlyAlert
           ? LnAlert.userFriendly(
               data,
-              colorFilled: colorFilled,
               buttons: buttons,
             )
           : LnAlert._(
-              type: AlertType.error,
-              colorFilled: colorFilled,
+              type: AlertTypes.error,
               buttons: buttons,
             );
 
   void showAt(
     BuildContext context, {
     Duration? duration,
-    AlertPosition? position,
-  }) =>
-      LnAlerts.of(context).show(this, duration: duration, position: position);
-
-  LnAlert copyWith({
-    AlertType? type,
-    String? title,
-    String? message,
-    IconData? icon,
-    Color? lightAccentColor,
-    Color? darkAccentColor,
-    Color? lightSecondaryColor,
-    Color? darkSecondaryColor,
-    bool? colorFilled,
-    List<LnAlertActionButton>? buttons,
   }) {
-    return LnAlert._(
-      type: type ?? this.type,
-      title: title ?? this.title,
-      message: message ?? this.message,
-      icon: icon ?? this.icon,
-      lightAccentColor: lightAccentColor ?? this.lightAccentColor,
-      darkAccentColor: darkAccentColor ?? this.darkAccentColor,
-      lightSecondaryColor: lightSecondaryColor ?? this.lightSecondaryColor,
-      darkSecondaryColor: darkSecondaryColor ?? this.darkSecondaryColor,
-      colorFilled: colorFilled ?? this.colorFilled,
-      buttons: buttons ?? this.buttons,
-    );
+    final alertContainer = LnAlertContainer.of(context);
+    final widgetType = alertContainer.widget.type == ContainerTypes.column
+        ? WidgetTypes.flat
+        : WidgetTypes.notification;
+    alertContainer.show(this, duration: duration, widgetType: widgetType);
   }
 }
