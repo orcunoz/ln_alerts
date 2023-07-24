@@ -2,6 +2,9 @@ import 'alert_types.dart';
 
 mixin UserFriendlyAlert {
   UserFriendlyAlertData get alertData;
+
+  @override
+  String toString() => "UserFriendlyAlert: $alertData";
 }
 
 final class UserFriendlyAlertData {
@@ -14,4 +17,7 @@ final class UserFriendlyAlertData {
     required this.message,
     required this.type,
   });
+
+  @override
+  String toString() => "($type) ${title == null ? "" : "$title: "}$message";
 }

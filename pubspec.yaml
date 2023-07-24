@@ -1,6 +1,6 @@
 name: ln_alerts
 description: Ln alerts and managing them
-version: 0.4.0
+version: 0.8.0
 repository: https://github.com/orcunoz/ln_alerts
 publish_to: none
 
@@ -11,6 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  stack_trace:
   ln_core:
     path: ../ln_core
     #git:

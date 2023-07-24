@@ -3,7 +3,6 @@ import 'package:ln_alerts/src/style/alert_decoration.dart';
 
 import 'container.dart';
 import 'models/alert_types.dart';
-import 'models/container_types.dart';
 import 'models/user_friendly_alert.dart';
 import 'models/widget_types.dart';
 import 'widgets/action_button.dart';
@@ -139,12 +138,14 @@ class LnAlert {
 
   void showAt(
     BuildContext context, {
+    WidgetTypes? widgetType,
     Duration? duration,
-  }) {
-    final alertContainer = LnAlertContainer.of(context);
-    final widgetType = alertContainer.widget.type == ContainerTypes.column
-        ? WidgetTypes.flat
-        : WidgetTypes.notification;
-    alertContainer.show(this, duration: duration, widgetType: widgetType);
-  }
+    Object? alertUnique,
+  }) =>
+      LnAlertContainer.of(context).show(
+        this,
+        duration: duration,
+        widgetType: widgetType,
+        alertUnique: alertUnique,
+      );
 }

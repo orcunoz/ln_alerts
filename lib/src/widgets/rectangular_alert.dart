@@ -37,14 +37,13 @@ class RectangularAlert extends LnAlertWidget {
 
   @override
   Widget build(BuildContext context) {
-    final lnAlerts = LnAlerts.of(context);
     final decoration = super.decoration ??
         LnAlertDecoration.generate(context: context, alertType: alert.type);
-    final typeSpecificConfig = lnAlerts.rectangularAlertDefaults;
-    final computedMinWidth = config?.minWidth ?? typeSpecificConfig.minWidth;
-    final constraints = computedMinWidth == null
+    final typeSpecificConfig =
+        config ?? LnAlerts.of(context).rectangularAlertDefaults;
+    final constraints = typeSpecificConfig.minWidth == null
         ? null
-        : BoxConstraints(minWidth: computedMinWidth);
+        : BoxConstraints(minWidth: typeSpecificConfig.minWidth!);
     final textStyle = TextStyle(color: decoration.foregroundColor);
 
     Widget child = Column(
@@ -71,7 +70,7 @@ class RectangularAlert extends LnAlertWidget {
           color: decoration.backgroundColor,
           borderRadius: typeSpecificConfig.borderRadius,
           border: Border.all(
-            width: typeSpecificConfig.borderWidth ?? .5,
+            width: typeSpecificConfig.borderWidth!,
             color: decoration.foregroundColor,
           ),
         ),
@@ -88,10 +87,10 @@ class RectangularAlert extends LnAlertWidget {
   }
 
   RectangularAlert.noResultsFound({
-    bool frameless = true,
+    RectangularAlertConfig config = const RectangularAlertConfig(),
     List<LnAlertActionButton> buttons = const [],
   }) : this(
-          config: RectangularAlertConfig.frameless(),
+          config: config,
           alert: LnAlert.info(
             LnAlertsLocalizations.current.noResultsFound,
             icon: Icons.web_asset_off_rounded,

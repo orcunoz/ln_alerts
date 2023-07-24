@@ -1,70 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:ln_alerts/ln_alerts.dart';
 import 'package:ln_core/ln_core.dart';
 
-import 'alert.dart';
-import 'defaults.dart';
-import 'models/container_types.dart';
-import 'models/widget_types.dart';
-import 'widgets/flat_alert.dart';
-import 'widgets/notification_alert.dart';
-import 'widgets/rectangular_alert.dart';
-
-class LnAlertContainer extends InheritedWidget {
+class _LnAlertContainer extends InheritedWidget {
   final LnAlertContainerState data;
 
-  const LnAlertContainer({
-    super.key,
+  const _LnAlertContainer({
     required this.data,
     required super.child,
   });
 
-  static Widget stack({
-    Key? key,
-    AlignmentGeometry alignment = AlignmentDirectional.topEnd,
-    TextDirection? textDirection,
-    StackFit fit = StackFit.expand,
-    Clip clipBehavior = Clip.hardEdge,
-    required List<Widget> Function(BuildContext) childrenBuilder,
-  }) =>
-      _LnAlertContainer(
-        type: ContainerTypes.stack,
-        defaultWidget: WidgetTypes.notification,
-        childrenBuilder: childrenBuilder,
-        builder: (context, children) => Stack(
-          key: key,
-          alignment: alignment,
-          textDirection: textDirection,
-          fit: fit,
-          clipBehavior: clipBehavior,
-          children: children,
-        ),
-      );
+  @override
+  bool updateShouldNotify(_LnAlertContainer oldWidget) =>
+      oldWidget.data != data;
+}
 
-  static Widget column({
-    Key? key,
-    MainAxisAlignment mainAxisAlignment = MainAxisAlignment.start,
-    MainAxisSize mainAxisSize = MainAxisSize.max,
-    CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.center,
-    TextDirection? textDirection,
-    VerticalDirection verticalDirection = VerticalDirection.down,
-    TextBaseline? textBaseline,
-    required List<Widget> Function(BuildContext) childrenBuilder,
-  }) =>
-      _LnAlertContainer(
-        type: ContainerTypes.column,
-        defaultWidget: WidgetTypes.flat,
-        childrenBuilder: childrenBuilder,
-        builder: (context, children) => Column(
-          key: key,
-          mainAxisAlignment: mainAxisAlignment,
-          mainAxisSize: mainAxisSize,
-          crossAxisAlignment: crossAxisAlignment,
-          textDirection: textDirection,
-          verticalDirection: verticalDirection,
-          textBaseline: textBaseline,
-          children: children,
-        ),
-      );
+class LnAlertContainer extends StatefulWidget {
+  final WidgetTypes? defaultWidget;
+  final Widget? child;
+  final WidgetBuilder? builder;
+  final bool shrinkWrap;
+
+  const LnAlertContainer({
+    super.key,
+    this.defaultWidget,
+    bool shrinkWrap = false,
+    this.child,
+  })  : builder = null,
+        shrinkWrap = shrinkWrap || child == null;
+
+  const LnAlertContainer.builder({
+    super.key,
+    this.defaultWidget,
+    bool shrinkWrap = false,
+    required this.builder,
+  })  : child = null,
+        shrinkWrap = shrinkWrap || builder == null;
+
+  @override
+  State<LnAlertContainer> createState() => LnAlertContainerState();
 
   static LnAlertContainerState of(BuildContext context) {
     var host = maybeOf(context);
@@ -76,181 +50,212 @@ class LnAlertContainer extends InheritedWidget {
   }
 
   static LnAlertContainerState? maybeOf(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<LnAlertContainer>()?.data;
-
-  @override
-  bool updateShouldNotify(LnAlertContainer oldWidget) => oldWidget.data != data;
+      context.dependOnInheritedWidgetOfExactType<_LnAlertContainer>()?.data;
 }
 
-class _LnAlertContainer extends StatefulWidget {
-  final ContainerTypes type;
-  final WidgetTypes defaultWidget;
-  final List<Widget> Function(BuildContext) childrenBuilder;
-  final Widget Function(BuildContext context, List<Widget> children) builder;
+class _AlertOnDisplay {
+  final Object? unique;
+  final WidgetTypes widgetType;
+  final LnAlert alert;
 
-  const _LnAlertContainer({
-    required this.type,
-    required this.defaultWidget,
-    required this.childrenBuilder,
-    required this.builder,
-  });
-
-  @override
-  State<_LnAlertContainer> createState() =>
-      LnAlertContainerState(++_generation);
+  _AlertOnDisplay(this.unique, this.widgetType, this.alert);
 }
 
-int _generation = 0;
+class LnAlertContainerState extends LnState<LnAlertContainer> {
+  final List<_AlertOnDisplay> _alerts = <_AlertOnDisplay>[];
+  final List<LnAlertContainerState> _registeredContainers = [];
 
-class LnAlertContainerState extends LnState<_LnAlertContainer> {
-  final Map<WidgetTypes, List<LnAlert>> _alerts = {
-    for (var k in WidgetTypes.values) k: <LnAlert>[]
-  };
-  final int _generation;
+  void register(LnAlertContainerState container) {
+    _registeredContainers.add(container);
+  }
 
-  LnAlertContainerState(this._generation) {
-    _log("constructor");
+  void unregister(LnAlertContainerState container) {
+    _registeredContainers.remove(container);
   }
 
   void _log(String method, [String? message]) {
-    Log.colored("LnAlertContainer",
-        "#$_generation.$method${message != null ? " => $message" : ""}");
+    //Log.colored("LnAlertContainer",
+    //    "#$_generation.$method${message != null ? " => $message" : ""}");
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.child == null && widget.builder == null) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        LnAlertContainer.maybeOf(context)?.register(this);
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    LnAlertContainer.maybeOf(context)?.unregister(this);
+  }
+
+  void clearAlertsByUnique(Object? unique) {
+    if (unique != null) {
+      for (var container in _registeredContainers) {
+        container.clearAlertsByUnique(unique);
+      }
+      _alerts.removeWhere((a) => a.unique == unique);
+      rebuild();
+    }
   }
 
   void show(
     final LnAlert alert, {
     final Duration? duration,
     final WidgetTypes? widgetType,
+    final Object? alertUnique,
   }) {
-    _log("show", alert.message);
+    clearAlertsByUnique(alertUnique);
     final lnAlerts = LnAlerts.of(context);
-    WidgetTypes alertWidgetType;
-    LnAlertContainerState container = this;
 
-    if (widgetType == null) {
-      alertWidgetType = switch (widget.type) {
-        ContainerTypes.column => lnAlerts.columnContainerDefaultWidget,
-        ContainerTypes.stack => lnAlerts.stackContainerDefaultWidget,
-      };
-    } else {
-      alertWidgetType = widgetType;
-      final requiredContainerType = switch (alertWidgetType) {
-        WidgetTypes.flat => ContainerTypes.column,
-        WidgetTypes.notification => ContainerTypes.stack,
-        WidgetTypes.rectangular => ContainerTypes.stack,
-      };
-      if (container.widget.type != requiredContainerType) {
-        LnAlertContainer.of(context).show(
+    if (_registeredContainers.isNotEmpty) {
+      for (var childContainer in _registeredContainers) {
+        childContainer._show(
+          lnAlerts,
           alert,
           duration: duration,
-          widgetType: alertWidgetType,
+          widgetType: widgetType,
+          alertUnique: alertUnique,
         );
-        return;
+      }
+    } else {
+      _show(
+        lnAlerts,
+        alert,
+        duration: duration,
+        widgetType: widgetType,
+        alertUnique: alertUnique,
+      );
+    }
+  }
+
+  bool _show(
+    final LnAlerts lnAlerts,
+    final LnAlert alert, {
+    final Duration? duration,
+    final WidgetTypes? widgetType,
+    final Object? alertUnique,
+  }) {
+    final defaultWidgetType =
+        widgetType ?? widget.defaultWidget ?? lnAlerts.defaultAlertWidget;
+
+    if (!_alerts.any((a) => a.alert == alert)) {
+      final newAlert = _AlertOnDisplay(alertUnique, defaultWidgetType, alert);
+      _alerts.add(newAlert);
+      rebuild();
+
+      final dur = duration ?? lnAlerts.defaultsOf(defaultWidgetType).duration;
+      if (dur != null) {
+        Future.delayed(dur, () {
+          _alerts.remove(newAlert);
+          rebuild();
+        });
       }
     }
-
-    final dur = duration ?? lnAlerts.defaultsOf(alertWidgetType).duration;
-    final targetAlertList = _alerts[alertWidgetType];
-
-    assert(targetAlertList != null);
-    if (targetAlertList!.contains(alert)) return;
-
-    targetAlertList.add(alert);
-    rebuild();
-    if (dur != null) {
-      Future.delayed(dur, () {
-        targetAlertList.remove(alert);
-        rebuild();
-      });
-    }
+    return true;
   }
 
   void errorHandler(Object error, StackTrace stackTrace) =>
       show(LnAlert.errorAutoDetect(error));
 
-  List<Widget> _buildColumnChildren(
-      BuildContext context, List<Widget> passedChildren) {
-    final defaults = LnAlerts.maybeOf(context)?.flatAlertDefaults;
-    final flatAlerts = _alerts[WidgetTypes.flat]!;
-
-    return [
-      if (defaults?.position == FlatAlertPosition.top)
-        for (var alert in flatAlerts)
-          FlatAlert(
-            alert: alert,
-            config: defaults,
-          ),
-      ...passedChildren,
-      if (defaults == null || defaults.position == FlatAlertPosition.bottom)
-        for (var alert in flatAlerts)
-          FlatAlert(
-            alert: alert,
-            config: defaults,
-          ),
-    ];
-  }
-
-  List<Widget> _buildStackChildren(
-      BuildContext context, List<Widget> passedChildren) {
+  Widget _build(BuildContext context) {
     final lnAlerts = LnAlerts.maybeOf(context);
-    final theme = Theme.of(context).brightness == Brightness.light
+    final lnTheme = Theme.of(context).brightness == Brightness.light
         ? lnAlerts?.lightTheme
         : lnAlerts?.darkTheme;
-    final padding = EdgeInsets.all(8);
 
-    final notificationAlerts = _alerts[WidgetTypes.notification]!;
-    final rectangularAlerts = _alerts[WidgetTypes.rectangular]!;
-
+    final flatAlertDefaults = lnAlerts?.flatAlertDefaults;
     final notificationAlertsConfig = lnAlerts?.notificationAlertDefaults;
     final rectangularAlertsConfig = lnAlerts?.rectangularAlertDefaults;
 
-    return [
-      ...passedChildren,
-      if (rectangularAlerts.isNotEmpty)
-        Container(
-          color: theme?.themeFor(rectangularAlerts.last.type).scrimColor,
-        ),
-      if (notificationAlerts.isNotEmpty)
-        Container(
-          padding: notificationAlertsConfig?.insets,
-          alignment: notificationAlertsConfig?.alignment,
-          child: SpacedColumn(
-            mainAxisSize: MainAxisSize.min,
-            spacing: 4,
-            children: [
-              for (var alert in notificationAlerts)
-                NotificationAlert(
-                  alert: alert,
-                  config: notificationAlertsConfig,
-                ),
-            ],
-          ),
-        ),
-      if (rectangularAlerts.isNotEmpty)
-        for (var alert in rectangularAlerts)
+    final flatAlertsOnDisplay =
+        _alerts.where((a) => a.widgetType == WidgetTypes.flat);
+    final notificationAlertsOnDisplay =
+        _alerts.where((a) => a.widgetType == WidgetTypes.notification);
+    final rectangularAlertsOnDisplay =
+        _alerts.where((a) => a.widgetType == WidgetTypes.rectangular);
+
+    final padding = EdgeInsets.all(8);
+
+    Widget? child = widget.child ?? widget.builder?.call(context);
+
+    if (!widget.shrinkWrap) {
+      child = Expanded(child: child!);
+    }
+
+    child = Column(
+      mainAxisSize: widget.shrinkWrap ? MainAxisSize.min : MainAxisSize.max,
+      children: [
+        if (flatAlertDefaults?.position == FlatAlertPosition.top)
+          for (var alertOnDisplay in flatAlertsOnDisplay)
+            FlatAlert(
+              alert: alertOnDisplay.alert,
+              config: flatAlertDefaults,
+            ),
+        if (child != null) child,
+        if (flatAlertDefaults == null ||
+            flatAlertDefaults.position == FlatAlertPosition.bottom)
+          for (var alertOnDisplay in flatAlertsOnDisplay)
+            FlatAlert(
+              alert: alertOnDisplay.alert,
+              config: flatAlertDefaults,
+            ),
+      ],
+    );
+
+    child = Stack(
+      children: [
+        child,
+        if (rectangularAlertsOnDisplay.isNotEmpty)
           Container(
-            alignment: Alignment.center,
-            padding: padding,
-            child: RectangularAlert(
-              alert: alert,
-              config: rectangularAlertsConfig,
+            color: lnTheme
+                ?.themeFor(rectangularAlertsOnDisplay.last.alert.type)
+                .scrimColor,
+          ),
+        if (notificationAlertsOnDisplay.isNotEmpty)
+          Container(
+            padding: notificationAlertsConfig?.insets,
+            alignment: notificationAlertsConfig?.alignment,
+            child: SpacedColumn(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 4,
+              children: [
+                for (var alertOnDisplay in notificationAlertsOnDisplay)
+                  NotificationAlert(
+                    alert: alertOnDisplay.alert,
+                    config: notificationAlertsConfig,
+                  ),
+              ],
             ),
           ),
-    ];
+        if (rectangularAlertsOnDisplay.isNotEmpty)
+          for (var alertOnDisplay in rectangularAlertsOnDisplay)
+            Container(
+              alignment: Alignment.center,
+              padding: padding,
+              child: RectangularAlert(
+                alert: alertOnDisplay.alert,
+                config: rectangularAlertsConfig,
+              ),
+            ),
+      ],
+    );
+
+    return child;
   }
 
   @override
   Widget build(BuildContext context) {
-    return LnAlertContainer(
+    return _LnAlertContainer(
       data: this,
       child: Builder(
-        builder: (context) {
-          final passedChildren = widget.childrenBuilder(context);
-          final mergedChildren = widget.type == ContainerTypes.column
-              ? _buildColumnChildren(context, passedChildren)
-              : _buildStackChildren(context, passedChildren);
-          return widget.builder(context, mergedChildren);
-        },
+        builder: _build,
       ),
     );
   }

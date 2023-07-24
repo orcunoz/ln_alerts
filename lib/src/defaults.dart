@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:ln_alerts/ln_alerts.dart';
 
-import 'container.dart';
-import 'models/widget_types.dart';
 import 'style/theme.dart';
-import 'widgets/alert_widget.dart';
-import 'widgets/flat_alert.dart';
-import 'widgets/notification_alert.dart';
-import 'widgets/rectangular_alert.dart';
 
 class LnAlerts extends InheritedWidget {
   final LnAlertsTheme lightTheme;
@@ -16,8 +11,7 @@ class LnAlerts extends InheritedWidget {
   final NotificationAlertConfig notificationAlertDefaults;
   final RectangularAlertConfig rectangularAlertDefaults;
 
-  final WidgetTypes columnContainerDefaultWidget;
-  final WidgetTypes stackContainerDefaultWidget;
+  final WidgetTypes defaultAlertWidget;
 
   LnAlerts({
     super.key,
@@ -26,12 +20,13 @@ class LnAlerts extends InheritedWidget {
     this.flatAlertDefaults = const FlatAlertConfig(),
     this.notificationAlertDefaults = const NotificationAlertConfig(),
     this.rectangularAlertDefaults = const RectangularAlertConfig(),
-    this.columnContainerDefaultWidget = WidgetTypes.flat,
-    this.stackContainerDefaultWidget = WidgetTypes.notification,
+    this.defaultAlertWidget = WidgetTypes.notification,
     required WidgetBuilder builder,
   }) : super(
-          child: LnAlertContainer.stack(
-            childrenBuilder: (context) => [builder(context)],
+          child: LnAlertContainer.builder(
+            defaultWidget: defaultAlertWidget,
+            shrinkWrap: false,
+            builder: builder,
           ),
         );
 
@@ -60,6 +55,5 @@ class LnAlerts extends InheritedWidget {
       oldWidget.flatAlertDefaults != flatAlertDefaults ||
       oldWidget.notificationAlertDefaults != notificationAlertDefaults ||
       oldWidget.rectangularAlertDefaults != rectangularAlertDefaults ||
-      oldWidget.columnContainerDefaultWidget != columnContainerDefaultWidget ||
-      oldWidget.stackContainerDefaultWidget != stackContainerDefaultWidget;
+      oldWidget.defaultAlertWidget != defaultAlertWidget;
 }
