@@ -1,151 +1,119 @@
 import 'package:flutter/material.dart';
-import 'package:ln_alerts/src/style/alert_decoration.dart';
 
-import 'container.dart';
-import 'models/alert_types.dart';
+import 'host.dart';
+import 'models/alert_widgets.dart';
 import 'models/user_friendly_alert.dart';
 import 'models/widget_types.dart';
-import 'widgets/action_button.dart';
 
 class LnAlert {
-  final AlertTypes type;
+  final AlertType? type;
   final String? title;
   final String? message;
   final IconData? icon;
-  final List<LnAlertActionButton> buttons;
-  final LnAlertDecoration? decoration;
 
   const LnAlert._({
     required this.type,
     this.title,
     this.message,
     this.icon,
-    this.buttons = const [],
-    this.decoration,
   });
 
   const LnAlert({
     this.title,
     required String this.message,
     this.icon,
-    this.buttons = const [],
-    this.decoration,
-  }) : type = AlertTypes.custom;
+  }) : type = null;
 
   const LnAlert.byType({
-    required AlertTypes type,
+    required AlertType type,
     String? title,
     required String message,
     IconData? icon,
-    List<LnAlertActionButton> buttons = const [],
   }) : this._(
           type: type,
           title: title,
           message: message,
           icon: icon,
-          buttons: buttons,
         );
 
   const LnAlert.info(
-    String message, {
+    String? message, {
     String? title,
     IconData? icon,
-    List<LnAlertActionButton> buttons = const [],
   }) : this._(
-          type: AlertTypes.info,
+          type: AlertType.info,
           title: title,
           message: message,
           icon: icon,
-          buttons: buttons,
         );
 
   const LnAlert.success(
-    String message, {
+    String? message, {
     String? title,
     IconData? icon,
-    List<LnAlertActionButton> buttons = const [],
   }) : this._(
-          type: AlertTypes.success,
+          type: AlertType.success,
           title: title,
           message: message,
           icon: icon,
-          buttons: buttons,
         );
 
   const LnAlert.warning(
-    String message, {
+    String? message, {
     String? title,
     IconData? icon,
-    List<LnAlertActionButton> buttons = const [],
   }) : this._(
-          type: AlertTypes.warning,
+          type: AlertType.warning,
           title: title,
           message: message,
           icon: icon,
-          buttons: buttons,
         );
 
   const LnAlert.error(
-    String message, {
+    String? message, {
     String? title,
     IconData? icon,
-    List<LnAlertActionButton> buttons = const [],
   }) : this._(
-          type: AlertTypes.error,
+          type: AlertType.error,
           title: title,
           message: message,
           icon: icon,
-          buttons: buttons,
         );
 
-  LnAlert.userFriendly(
-    UserFriendlyAlert data, {
-    List<LnAlertActionButton> buttons = const [],
-  }) : this.byType(
-          type: data.alertData.type,
-          title: data.alertData.title,
-          message: data.alertData.message,
-          buttons: buttons,
+  LnAlert.userFriendly(UserFriendlyAlert data)
+      : this.userFriendlyData(data.alertData);
+
+  LnAlert.userFriendlyData(UserFriendlyAlertData data)
+      : this.byType(
+          type: data.type,
+          title: data.title,
+          message: data.message,
         );
 
-  factory LnAlert.successAutoDetect(
-    dynamic data, {
-    List<LnAlertActionButton> buttons = const [],
-  }) =>
+  factory LnAlert.successAutoDetect(dynamic data) =>
       data != null && data is UserFriendlyAlert
-          ? LnAlert.userFriendly(
-              data,
-              buttons: buttons,
-            )
-          : LnAlert._(
-              type: AlertTypes.success,
-              buttons: buttons,
-            );
+          ? LnAlert.userFriendly(data)
+          : data != null && data is UserFriendlyAlertData
+              ? LnAlert.userFriendlyData(data)
+              : LnAlert._(type: AlertType.success);
 
-  factory LnAlert.errorAutoDetect(
-    dynamic data, {
-    List<LnAlertActionButton> buttons = const [],
-  }) =>
+  factory LnAlert.errorAutoDetect(dynamic data) =>
       data != null && data is UserFriendlyAlert
-          ? LnAlert.userFriendly(
-              data,
-              buttons: buttons,
-            )
-          : LnAlert._(
-              type: AlertTypes.error,
-              buttons: buttons,
-            );
+          ? LnAlert.userFriendly(data)
+          : data != null && data is UserFriendlyAlertData
+              ? LnAlert.userFriendlyData(data)
+              : LnAlert._(type: AlertType.error);
 
   void showAt(
     BuildContext context, {
-    WidgetTypes? widgetType,
+    AlertWidgets? widgetType,
     Duration? duration,
-    Object? alertUnique,
+    Object? unique,
   }) =>
-      LnAlertContainer.of(context).show(
+      LnAlertHost.of(context).show(
         this,
         duration: duration,
         widgetType: widgetType,
-        alertUnique: alertUnique,
+        unique: unique,
       );
 }

@@ -1,59 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:ln_alerts/ln_alerts.dart';
 
-import '../models/alert_types.dart';
-import 'alert_type_theme.dart';
-
-class LnAlertsTheme {
-  final LnAlertTypeTheme infoTheme;
-  final LnAlertTypeTheme successTheme;
-  final LnAlertTypeTheme warningTheme;
-  final LnAlertTypeTheme errorTheme;
-
+class LnAlertsTheme extends StatelessWidget {
   const LnAlertsTheme({
-    required this.infoTheme,
-    required this.successTheme,
-    required this.warningTheme,
-    required this.errorTheme,
+    super.key,
+    required this.data,
+    required this.child,
   });
 
-  factory LnAlertsTheme.defaults(Brightness brightness) =>
-      brightness == Brightness.light
-          ? LnAlertsTheme.defaultsLight()
-          : LnAlertsTheme.defaultsDark();
+  final LnAlertsThemeData data;
+  final Widget child;
 
-  const LnAlertsTheme.defaultsLight({
-    this.infoTheme = const LnAlertTypeTheme.infoLight(),
-    this.successTheme = const LnAlertTypeTheme.successLight(),
-    this.warningTheme = const LnAlertTypeTheme.warningLight(),
-    this.errorTheme = const LnAlertTypeTheme.errorLight(),
-  });
-
-  const LnAlertsTheme.defaultsDark({
-    this.infoTheme = const LnAlertTypeTheme.infoDark(),
-    this.successTheme = const LnAlertTypeTheme.successDark(),
-    this.warningTheme = const LnAlertTypeTheme.warningDark(),
-    this.errorTheme = const LnAlertTypeTheme.errorDark(),
-  });
-
-  LnAlertTypeTheme themeFor(AlertTypes type) => switch (type) {
-        AlertTypes.info => infoTheme,
-        AlertTypes.success => successTheme,
-        AlertTypes.warning => warningTheme,
-        AlertTypes.error => errorTheme,
-        AlertTypes.custom => infoTheme,
+  WidgetDecoration decorationOf(AlertWidgets type) => switch (type) {
+        AlertWidgets.flat => data.flatAlertDecoration,
+        AlertWidgets.notification => data.notificationAlertDecoration,
+        AlertWidgets.popup => data.popupAlertDecoration,
       };
 
-  LnAlertsTheme copyWith({
-    LnAlertTypeTheme? infoTheme,
-    LnAlertTypeTheme? successTheme,
-    LnAlertTypeTheme? warningTheme,
-    LnAlertTypeTheme? errorTheme,
-  }) {
-    return LnAlertsTheme(
-      infoTheme: infoTheme ?? this.infoTheme,
-      successTheme: successTheme ?? this.successTheme,
-      warningTheme: warningTheme ?? this.warningTheme,
-      errorTheme: errorTheme ?? this.errorTheme,
+  static final _defaultLightTheme = const LnAlertsThemeData.light();
+  static final _defaultDarkTheme = const LnAlertsThemeData.dark();
+
+  static LnAlertsThemeData of(BuildContext context) {
+    final _InheritedAlertsTheme? inheritedTheme =
+        context.dependOnInheritedWidgetOfExactType<_InheritedAlertsTheme>();
+
+    return inheritedTheme?.theme.data ??
+        (Theme.of(context).brightness == Brightness.dark
+            ? _defaultDarkTheme
+            : _defaultLightTheme);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _InheritedAlertsTheme(
+      theme: this,
+      child: child,
     );
   }
+}
+
+class _InheritedAlertsTheme extends InheritedWidget {
+  const _InheritedAlertsTheme({
+    required this.theme,
+    required super.child,
+  });
+
+  final LnAlertsTheme theme;
+
+  Widget wrap(BuildContext context, Widget child) {
+    return LnAlertsTheme(data: theme.data, child: child);
+  }
+
+  @override
+  bool updateShouldNotify(_InheritedAlertsTheme old) =>
+      theme.data != old.theme.data;
 }

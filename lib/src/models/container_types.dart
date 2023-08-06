@@ -1,4 +1,0 @@
-enum ContainerTypes {
-  column,
-  stack,
-}

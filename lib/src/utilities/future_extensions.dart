@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:ln_core/ln_core.dart';
 
 import '../alert.dart';
-import '../container.dart';
+import '../host.dart';
 import '../models/widget_types.dart';
 
 extension LnAlertFutureExtensions<T> on Future<T> {
   Future<T> manageAlerts(
     BuildContext context, {
     Duration? duration,
-    WidgetTypes? widgetType,
+    AlertWidgets? widgetType,
   }) {
     final alertUnique = Trace.current().frames[1].toString();
-    final container = LnAlertContainer.of(context);
+    final container = LnAlertHost.of(context);
     return this
       .._manageSuccessAlerts(
         container,
@@ -32,40 +32,50 @@ extension LnAlertFutureExtensions<T> on Future<T> {
   Future<T> manageSuccessAlerts(
     BuildContext context, {
     Duration? duration,
-    WidgetTypes? widgetType,
+    AlertWidgets? widgetType,
   }) {
     final alertUnique = Trace.current().frames[1].toString();
-    final container = LnAlertContainer.of(context);
-    return _manageSuccessAlerts(
-      container,
-      duration: duration,
-      widgetType: widgetType,
-      alertUnique: alertUnique,
-    );
+    final container = LnAlertHost.of(context);
+    return this
+      .._manageSuccessAlerts(
+        container,
+        duration: duration,
+        widgetType: widgetType,
+        alertUnique: alertUnique,
+      );
   }
 
   Future<T> manageErrorAlerts(
     BuildContext context, {
     Duration? duration,
-    WidgetTypes? widgetType,
+    AlertWidgets? widgetType,
   }) {
     final alertUnique = Trace.current().frames[1].toString();
-    final container = LnAlertContainer.of(context);
-    return _manageErrorAlerts(
-      container,
-      duration: duration,
-      widgetType: widgetType,
-      alertUnique: alertUnique,
-    );
+    final container = LnAlertHost.of(context);
+    return this
+      .._manageErrorAlerts(
+        container,
+        duration: duration,
+        widgetType: widgetType,
+        alertUnique: alertUnique,
+      );
+  }
+
+  Future<T> manageProgressIndicator(BuildContext context) {
+    final progressUnique = Trace.current().frames[1].toString();
+    final container = LnAlertHost.of(context);
+    container.addProgress(progressUnique);
+    return this..whenComplete(() => container.removeProgress(progressUnique));
   }
 
   Future<T> _manageSuccessAlerts(
-    LnAlertContainerState host, {
+    LnAlertHostState host, {
     Duration? duration,
-    WidgetTypes? widgetType,
+    AlertWidgets? widgetType,
     Object? alertUnique,
   }) {
-    host.clearAlertsByUnique(alertUnique);
+    host.removeByUnique(alertUnique);
+    Log.colored("_manageSuccessAlerts", alertUnique.toString());
 
     return this
       ..then((value) {
@@ -73,19 +83,20 @@ extension LnAlertFutureExtensions<T> on Future<T> {
           LnAlert.successAutoDetect(value),
           duration: duration,
           widgetType: widgetType,
-          alertUnique: alertUnique,
+          unique: alertUnique,
         );
         return value;
       });
   }
 
   Future<T> _manageErrorAlerts(
-    LnAlertContainerState host, {
+    LnAlertHostState host, {
     Duration? duration,
-    WidgetTypes? widgetType,
+    AlertWidgets? widgetType,
     Object? alertUnique,
   }) {
-    host.clearAlertsByUnique(alertUnique);
+    host.removeByUnique(alertUnique);
+    Log.colored("_manageSuccessAlerts", alertUnique.toString());
 
     return this
       ..catchError((error, stackTrace) {
@@ -94,7 +105,7 @@ extension LnAlertFutureExtensions<T> on Future<T> {
           LnAlert.errorAutoDetect(error),
           duration: duration,
           widgetType: widgetType,
-          alertUnique: alertUnique,
+          unique: alertUnique,
         );
         throw error;
       });

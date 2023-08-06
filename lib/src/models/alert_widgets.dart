@@ -1,7 +1,6 @@
-enum AlertTypes {
+enum AlertType {
   info,
   success,
   warning,
   error,
-  custom,
 }

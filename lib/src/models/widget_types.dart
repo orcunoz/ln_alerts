@@ -1,5 +1,5 @@
-enum WidgetTypes {
+enum AlertWidgets {
   flat,
   notification,
-  rectangular,
+  popup,
 }

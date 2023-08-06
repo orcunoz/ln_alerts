@@ -1,53 +1,65 @@
-import 'package:flutter/material.dart';
-import 'package:ln_alerts/ln_alerts.dart';
-import 'package:ln_alerts/src/style/alert_decoration.dart';
-import 'package:ln_core/ln_core.dart';
+part of 'alert_widget.dart';
 
-class NotificationAlertConfig extends AlertConfig {
-  final double? width;
-  final BorderRadius? borderRadius;
-  final double? borderWidth;
-  final EdgeInsets? insets;
-  final Alignment? alignment;
-
-  const NotificationAlertConfig({
-    super.duration = const Duration(seconds: 10),
-    this.width = 400,
-    this.borderRadius = const BorderRadius.all(Radius.circular(8)),
-    this.borderWidth = .5,
-    this.insets = const EdgeInsets.all(8),
-    this.alignment = Alignment.topRight,
-  });
-}
-
-class NotificationAlert extends LnAlertWidget {
-  final NotificationAlertConfig? config;
-
+class NotificationAlert extends LnAlertWidget<NotificationAlertDecoration> {
   const NotificationAlert({
     super.key,
     required super.alert,
-    this.config,
-  });
+    super.decoration,
+    super.onTap,
+    super.buttons = const [],
+  }) : super(widgetType: AlertWidgets.notification);
+
+  NotificationAlert.custom({
+    super.key,
+    required String message,
+    String? title,
+    IconData? icon,
+    void Function()? onTap,
+    List<LnAlertActionButton> buttons = const [],
+    super.decoration,
+  }) : super(
+          alert: LnAlert(
+            message: message,
+            title: title,
+            icon: icon,
+          ),
+          widgetType: AlertWidgets.notification,
+          onTap: onTap,
+          buttons: buttons,
+        );
+
+  NotificationAlert.byType({
+    super.key,
+    required AlertType type,
+    required String message,
+    String? title,
+    IconData? icon,
+    void Function()? onTap,
+    List<LnAlertActionButton> buttons = const [],
+    super.decoration,
+  }) : super(
+          alert: LnAlert.byType(
+            type: type,
+            message: message,
+            title: title,
+            icon: icon,
+          ),
+          widgetType: AlertWidgets.notification,
+          onTap: onTap,
+          buttons: buttons,
+        );
 
   @override
   Widget build(BuildContext context) {
-    final defaults = LnAlerts.of(context).notificationAlertDefaults;
-    final decoration = super.decoration ??
-        LnAlertDecoration.generate(context: context, alertType: alert.type);
+    final decoration = _prepareDecoration(context);
 
-    final textStyle = TextStyle(color: decoration.foregroundColor);
-
-    Widget child = Text(effectiveMessage, style: textStyle);
-
-    if (alert.title != null) {
+    Widget child = decoration.textWidget;
+    if (decoration.titleWidget != null) {
       child = SpacedColumn(
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 2,
         children: [
-          Text(
-            alert.title!,
-            style: textStyle.copyWith(fontWeight: FontWeight.bold),
-          ),
+          decoration.titleWidget!,
           child,
         ],
       );
@@ -56,31 +68,12 @@ class NotificationAlert extends LnAlertWidget {
     child = SpacedRow(
       spacing: 8,
       children: [
-        Icon(decoration.icon, color: decoration.foregroundColor),
+        Icon(decoration.icon, color: decoration.gaugesColor),
         Expanded(child: child),
-        for (var button in alert.buttons) button,
+        ...getEffectiveButtons(decoration.gaugesColor),
       ],
     );
 
-    final constraints = defaults.width == null
-        ? null
-        : BoxConstraints(maxWidth: defaults.width!);
-
-    return Container(
-      padding: EdgeInsets.all(12),
-      constraints: constraints,
-      decoration: BoxDecoration(
-        color: decoration.backgroundColor,
-        border: Border.fromBorderSide(
-          BorderSide(
-            width: .5,
-            color: decoration.backgroundColor
-                .blend(decoration.foregroundColor, 50),
-          ),
-        ),
-        borderRadius: defaults.borderRadius ?? BorderRadius.circular(8),
-      ),
-      child: child,
-    );
+    return _buildContainer(decoration, child);
   }
 }

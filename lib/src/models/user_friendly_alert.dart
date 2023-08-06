@@ -1,4 +1,4 @@
-import 'alert_types.dart';
+import 'alert_widgets.dart';
 
 mixin UserFriendlyAlert {
   UserFriendlyAlertData get alertData;
@@ -10,7 +10,7 @@ mixin UserFriendlyAlert {
 final class UserFriendlyAlertData {
   final String? title;
   final String message;
-  final AlertTypes type;
+  final AlertType type;
 
   const UserFriendlyAlertData({
     this.title,
