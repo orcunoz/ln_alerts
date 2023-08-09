@@ -11,10 +11,10 @@ class LnAlertsTheme extends StatelessWidget {
   final LnAlertsThemeData data;
   final Widget child;
 
-  WidgetDecoration decorationOf(AlertWidgets type) => switch (type) {
-        AlertWidgets.flat => data.flatAlertDecoration,
-        AlertWidgets.notification => data.notificationAlertDecoration,
-        AlertWidgets.popup => data.popupAlertDecoration,
+  WidgetDecoration decorationOf(AlertWidget type) => switch (type) {
+        AlertWidget.flat => data.flatAlertDecoration,
+        AlertWidget.notification => data.notificationAlertDecoration,
+        AlertWidget.popup => data.popupAlertDecoration,
       };
 
   static final _defaultLightTheme = const LnAlertsThemeData.light();

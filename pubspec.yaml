@@ -1,6 +1,6 @@
 name: ln_alerts
 description: LnAlerts, creating and managing alerts
-version: 0.8.3
+version: 0.8.5
 repository: https://github.com/orcunoz/ln_alerts
 publish_to: none
 

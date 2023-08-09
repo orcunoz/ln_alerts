@@ -4,13 +4,13 @@ import 'package:ln_core/ln_core.dart';
 
 import '../alert.dart';
 import '../host.dart';
-import '../models/widget_types.dart';
+import '../models/alert_widget.dart';
 
 extension LnAlertFutureExtensions<T> on Future<T> {
   Future<T> manageAlerts(
     BuildContext context, {
     Duration? duration,
-    AlertWidgets? widgetType,
+    AlertWidget? widgetType,
   }) {
     final alertUnique = Trace.current().frames[1].toString();
     final container = LnAlertHost.of(context);
@@ -32,7 +32,7 @@ extension LnAlertFutureExtensions<T> on Future<T> {
   Future<T> manageSuccessAlerts(
     BuildContext context, {
     Duration? duration,
-    AlertWidgets? widgetType,
+    AlertWidget? widgetType,
   }) {
     final alertUnique = Trace.current().frames[1].toString();
     final container = LnAlertHost.of(context);
@@ -48,7 +48,7 @@ extension LnAlertFutureExtensions<T> on Future<T> {
   Future<T> manageErrorAlerts(
     BuildContext context, {
     Duration? duration,
-    AlertWidgets? widgetType,
+    AlertWidget? widgetType,
   }) {
     final alertUnique = Trace.current().frames[1].toString();
     final container = LnAlertHost.of(context);
@@ -71,11 +71,10 @@ extension LnAlertFutureExtensions<T> on Future<T> {
   Future<T> _manageSuccessAlerts(
     LnAlertHostState host, {
     Duration? duration,
-    AlertWidgets? widgetType,
+    AlertWidget? widgetType,
     Object? alertUnique,
   }) {
     host.removeByUnique(alertUnique);
-    Log.colored("_manageSuccessAlerts", alertUnique.toString());
 
     return this
       ..then((value) {
@@ -92,11 +91,10 @@ extension LnAlertFutureExtensions<T> on Future<T> {
   Future<T> _manageErrorAlerts(
     LnAlertHostState host, {
     Duration? duration,
-    AlertWidgets? widgetType,
+    AlertWidget? widgetType,
     Object? alertUnique,
   }) {
     host.removeByUnique(alertUnique);
-    Log.colored("_manageSuccessAlerts", alertUnique.toString());
 
     return this
       ..catchError((error, stackTrace) {

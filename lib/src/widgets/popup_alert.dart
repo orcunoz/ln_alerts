@@ -7,7 +7,7 @@ class PopupAlert extends LnAlertWidget<PopupAlertDecoration> {
     super.decoration = const PopupAlertDecoration(),
     super.onTap,
     super.buttons = const [],
-  }) : super(widgetType: AlertWidgets.popup);
+  }) : super(widgetType: AlertWidget.popup);
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class PopupAlert extends LnAlertWidget<PopupAlertDecoration> {
       ],
     );
 
-    child = _buildContainer(decoration, child);
+    child = _buildContainer(context, decoration, child);
 
     /*if (decoration.showRemoveButton && onTapRemove != null) {
       child = Stack(

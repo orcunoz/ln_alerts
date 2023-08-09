@@ -7,15 +7,15 @@ class NotificationAlert extends LnAlertWidget<NotificationAlertDecoration> {
     super.decoration,
     super.onTap,
     super.buttons = const [],
-  }) : super(widgetType: AlertWidgets.notification);
+  }) : super(widgetType: AlertWidget.notification);
 
   NotificationAlert.custom({
     super.key,
     required String message,
     String? title,
     IconData? icon,
-    void Function()? onTap,
-    List<LnAlertActionButton> buttons = const [],
+    super.onTap,
+    super.buttons = const [],
     super.decoration,
   }) : super(
           alert: LnAlert(
@@ -23,30 +23,26 @@ class NotificationAlert extends LnAlertWidget<NotificationAlertDecoration> {
             title: title,
             icon: icon,
           ),
-          widgetType: AlertWidgets.notification,
-          onTap: onTap,
-          buttons: buttons,
+          widgetType: AlertWidget.notification,
         );
 
   NotificationAlert.byType({
     super.key,
     required AlertType type,
-    required String message,
+    required String? message,
     String? title,
     IconData? icon,
-    void Function()? onTap,
-    List<LnAlertActionButton> buttons = const [],
+    super.onTap,
+    super.buttons = const [],
     super.decoration,
   }) : super(
-          alert: LnAlert.byType(
+          alert: LnAlert(
             type: type,
             message: message,
             title: title,
             icon: icon,
           ),
-          widgetType: AlertWidgets.notification,
-          onTap: onTap,
-          buttons: buttons,
+          widgetType: AlertWidget.notification,
         );
 
   @override
@@ -74,6 +70,6 @@ class NotificationAlert extends LnAlertWidget<NotificationAlertDecoration> {
       ],
     );
 
-    return _buildContainer(decoration, child);
+    return _buildContainer(context, decoration, child);
   }
 }

@@ -1,4 +1,4 @@
-enum AlertWidgets {
+enum AlertWidget {
   flat,
   notification,
   popup,

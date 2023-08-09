@@ -1,12 +1,11 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:ln_core/ln_core.dart';
 
-import 'package:ln_alerts/src/style/theme.dart';
-
 import '../alert.dart';
-import '../models/alert_widgets.dart';
-import '../models/widget_types.dart';
+import '../models/alert_type.dart';
+import '../models/alert_widget.dart';
+import '../style/theme.dart';
+import '../style/theme_data.dart';
 import '../style/widget_decoration.dart';
 import 'action_button.dart';
 
@@ -21,7 +20,7 @@ class _ComputedDecoration {
   final Text? titleWidget;
   final Text textWidget;
   final Color gaugesColor;
-  final Border border;
+  final BorderSide borderSide;
   final BorderRadius? borderRadius;
   final EdgeInsets padding;
   final IconData? icon;
@@ -32,7 +31,7 @@ class _ComputedDecoration {
     required this.titleWidget,
     required this.textWidget,
     required this.gaugesColor,
-    required this.border,
+    required this.borderSide,
     required this.borderRadius,
     required this.padding,
     required this.icon,
@@ -46,7 +45,7 @@ abstract class LnAlertWidget<T extends WidgetDecoration>
   final T? _decoration;
   final AlertOnTap? onTap;
   final List<LnAlertActionButton> buttons;
-  final AlertWidgets widgetType;
+  final AlertWidget widgetType;
 
   const LnAlertWidget({
     required super.key,
@@ -99,18 +98,25 @@ abstract class LnAlertWidget<T extends WidgetDecoration>
         themeDecoration.foregroundColor ??
         defaultColors.foreground;
 
-    final position = widgetType == AlertWidgets.flat
-        ? ((_decoration as FlatAlertDecoration?)?.position ??
-            (themeDecoration as FlatAlertDecoration?)?.position)
-        : null;
-    final borderSide = BorderSide(
+    final BorderSide borderSide = BorderSide(
       color: backgroundColor.blend(foregroundColor, 40),
       width: _decoration?.borderWidth ?? themeDecoration.borderWidth ?? .5,
     );
+    final BorderRadius? borderRadius;
+
+    if (widgetType != AlertWidget.flat) {
+      borderRadius = BorderRadius.all(
+        _decoration?.borderRadius ??
+            themeDecoration.borderRadius ??
+            Radius.zero,
+      );
+    } else {
+      borderRadius = BorderRadius.zero;
+    }
 
     final textStyle = TextStyle(color: foregroundColor);
 
-    final minWidth = widgetType == AlertWidgets.popup
+    final minWidth = widgetType == AlertWidget.popup
         ? ((_decoration as PopupAlertDecoration?)?.minWidth ??
             (themeDecoration as PopupAlertDecoration?)?.minWidth)
         : null;
@@ -133,42 +139,55 @@ abstract class LnAlertWidget<T extends WidgetDecoration>
           : alertsTheme.iconOf(alert.type!),
       padding:
           _decoration?.padding ?? themeDecoration.padding ?? EdgeInsets.zero,
-      borderRadius: position == null
-          ? BorderRadius.all(
-              _decoration?.borderRadius ??
-                  themeDecoration.borderRadius ??
-                  Radius.zero,
-            )
-          : null,
-      border: switch (position) {
-        FlatAlertPosition.top => Border(bottom: borderSide),
-        FlatAlertPosition.bottom => Border(top: borderSide),
-        null => Border.fromBorderSide(borderSide),
-      },
+      borderRadius: borderRadius,
+      borderSide: borderSide,
       minWidth: minWidth,
     );
   }
 
-  Widget _buildContainer(_ComputedDecoration computedDecoration, Widget child) {
-    child = Container(
-      padding: computedDecoration.padding,
-      constraints: computedDecoration.minWidth == null
-          ? null
-          : BoxConstraints(minWidth: computedDecoration.minWidth!),
-      decoration: BoxDecoration(
-        color: computedDecoration.backgroundColor,
-        border: computedDecoration.border,
-        borderRadius: computedDecoration.borderRadius,
-      ),
-      child: child,
-    );
+  Widget _buildContainer(BuildContext context,
+      _ComputedDecoration computedDecoration, Widget child) {
+    final constraints = computedDecoration.minWidth == null
+        ? null
+        : BoxConstraints(minWidth: computedDecoration.minWidth!);
+
+    if (computedDecoration.padding != EdgeInsets.zero) {
+      child = Padding(
+        padding: computedDecoration.padding,
+        child: child,
+      );
+    }
+
+    if (constraints != null) {
+      child = ConstrainedBox(
+        constraints: constraints,
+        child: child,
+      );
+    }
 
     if (onTap != null) {
       child = InkWell(
+        splashColor: computedDecoration.gaugesColor.withOpacity(.3),
+        overlayColor: computedDecoration.gaugesColor.withOpacity(.15).material,
         onTap: onTap,
         child: child,
       );
     }
+
+    final position = widgetType == AlertWidget.flat
+        ? LnAlertsTheme.of(context).flatAlertsContainerSettings.position
+        : null;
+
+    child = Material(
+      color: computedDecoration.backgroundColor,
+      shape: switch (position) {
+        FlatAlertPosition.top => Border(bottom: computedDecoration.borderSide),
+        FlatAlertPosition.bottom => Border(top: computedDecoration.borderSide),
+        _ => null
+      },
+      surfaceTintColor: Colors.white,
+      child: child,
+    );
 
     return child;
   }

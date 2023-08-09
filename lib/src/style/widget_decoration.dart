@@ -20,19 +20,11 @@ abstract class WidgetDecoration {
   });
 }
 
-enum FlatAlertPosition {
-  top,
-  bottom,
-}
-
 class FlatAlertDecoration extends WidgetDecoration {
-  final FlatAlertPosition position;
-
   const FlatAlertDecoration({
-    this.position = FlatAlertPosition.bottom,
     super.borderWidth = .5,
     super.showRemoveButton = true,
-    super.padding = const EdgeInsets.all(12),
+    super.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     super.backgroundColor,
     super.foregroundColor,
     super.icon,

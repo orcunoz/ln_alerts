@@ -1,4 +1,4 @@
-import 'alert_widgets.dart';
+import 'alert_type.dart';
 
 mixin UserFriendlyAlert {
   UserFriendlyAlertData get alertData;

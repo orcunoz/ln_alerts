@@ -1,23 +1,52 @@
 import 'package:flutter/material.dart';
 
-import '../models/alert_widgets.dart';
-import '../models/widget_types.dart';
+import '../models/alert_type.dart';
+import '../models/alert_widget.dart';
 import 'widget_decoration.dart';
 
 part 'type_colors.dart';
 
-class NotificationAlertContainerSettings {
+class NotificationAlertsContainerSettings {
   final double width;
   final EdgeInsets insets;
   final double spacing;
   final Alignment alignment;
 
-  const NotificationAlertContainerSettings({
+  const NotificationAlertsContainerSettings({
     this.width = 400,
     this.insets = const EdgeInsets.all(8),
     this.spacing = 4,
     this.alignment = Alignment.topRight,
   });
+}
+
+enum FlatAlertPosition {
+  top,
+  bottom,
+}
+
+class FlatAlertsContainerSettings {
+  final FlatAlertPosition? position;
+  final BorderSide? borderSide;
+  final BorderRadius? borderRadius;
+  final double? amountOfInsertingUnderContent;
+  final double? horizontalMargin;
+
+  const FlatAlertsContainerSettings({
+    this.position,
+    this.borderSide,
+    this.borderRadius,
+    this.amountOfInsertingUnderContent,
+    this.horizontalMargin,
+  }) : assert((amountOfInsertingUnderContent ?? 0) >= .0);
+
+  const FlatAlertsContainerSettings.fallback({
+    this.position = FlatAlertPosition.bottom,
+    this.borderSide = BorderSide.none,
+    this.borderRadius = BorderRadius.zero,
+    this.amountOfInsertingUnderContent = 0,
+    this.horizontalMargin = 0,
+  }) : assert((amountOfInsertingUnderContent ?? 0) >= .0);
 }
 
 class LnAlertsThemeData {
@@ -31,8 +60,9 @@ class LnAlertsThemeData {
   final LnAlertColors errorColors;
 
   final FlatAlertDecoration flatAlertDecoration;
+  final FlatAlertsContainerSettings flatAlertsContainerSettings;
   final NotificationAlertDecoration notificationAlertDecoration;
-  final NotificationAlertContainerSettings notificationAlertContainerSettings;
+  final NotificationAlertsContainerSettings notificationAlertContainerSettings;
   final PopupAlertDecoration popupAlertDecoration;
 
   final Color? scrimColor;
@@ -47,6 +77,7 @@ class LnAlertsThemeData {
     required this.errorIcon,
     required this.errorColors,
     required this.flatAlertDecoration,
+    required this.flatAlertsContainerSettings,
     required this.notificationAlertDecoration,
     required this.notificationAlertContainerSettings,
     required this.popupAlertDecoration,
@@ -64,11 +95,12 @@ class LnAlertsThemeData {
     IconData? errorIcon,
     LnAlertColors? errorColors,
     FlatAlertDecoration? flatAlertTheme,
+    FlatAlertsContainerSettings? flatAlertsContainerSettings,
     NotificationAlertDecoration? notificationAlertTheme,
-    NotificationAlertContainerSettings? notificationAlertContainerSettings,
+    NotificationAlertsContainerSettings? notificationAlertContainerSettings,
     PopupAlertDecoration? popupAlertTheme,
     Color? scrimColor,
-    AlertWidgets? defaultWidget,
+    AlertWidget? defaultWidget,
   }) =>
       (brightness == Brightness.dark
               ? LnAlertsThemeData.dark()
@@ -83,6 +115,7 @@ class LnAlertsThemeData {
         errorIcon: errorIcon,
         errorColors: errorColors,
         flatAlertDecoration: flatAlertTheme,
+        flatAlertsContainerSettings: flatAlertsContainerSettings,
         notificationAlertDecoration: notificationAlertTheme,
         notificationAlertContainerSettings: notificationAlertContainerSettings,
         popupAlertDecoration: popupAlertTheme,
@@ -99,9 +132,11 @@ class LnAlertsThemeData {
     this.errorIcon = Icons.error_outline_rounded,
     this.errorColors = const LnAlertColors.errorLight(),
     this.flatAlertDecoration = const FlatAlertDecoration(),
+    this.flatAlertsContainerSettings =
+        const FlatAlertsContainerSettings.fallback(),
     this.notificationAlertDecoration = const NotificationAlertDecoration(),
     this.notificationAlertContainerSettings =
-        const NotificationAlertContainerSettings(),
+        const NotificationAlertsContainerSettings(),
     this.popupAlertDecoration = const PopupAlertDecoration(),
     this.scrimColor,
   });
@@ -116,9 +151,11 @@ class LnAlertsThemeData {
     this.errorIcon = Icons.error_outline_rounded,
     this.errorColors = const LnAlertColors.errorDark(),
     this.flatAlertDecoration = const FlatAlertDecoration(),
+    this.flatAlertsContainerSettings =
+        const FlatAlertsContainerSettings.fallback(),
     this.notificationAlertDecoration = const NotificationAlertDecoration(),
     this.notificationAlertContainerSettings =
-        const NotificationAlertContainerSettings(),
+        const NotificationAlertsContainerSettings(),
     this.popupAlertDecoration = const PopupAlertDecoration(),
     this.scrimColor,
   });
@@ -137,11 +174,11 @@ class LnAlertsThemeData {
         AlertType.error => errorColors,
       };
 
-  WidgetDecoration decorationOf(AlertWidgets alertWidget) =>
+  WidgetDecoration decorationOf(AlertWidget alertWidget) =>
       switch (alertWidget) {
-        AlertWidgets.flat => flatAlertDecoration,
-        AlertWidgets.notification => notificationAlertDecoration,
-        AlertWidgets.popup => popupAlertDecoration,
+        AlertWidget.flat => flatAlertDecoration,
+        AlertWidget.notification => notificationAlertDecoration,
+        AlertWidget.popup => popupAlertDecoration,
       };
 
   LnAlertsThemeData copyWith({
@@ -154,8 +191,9 @@ class LnAlertsThemeData {
     IconData? errorIcon,
     LnAlertColors? errorColors,
     FlatAlertDecoration? flatAlertDecoration,
+    FlatAlertsContainerSettings? flatAlertsContainerSettings,
     NotificationAlertDecoration? notificationAlertDecoration,
-    NotificationAlertContainerSettings? notificationAlertContainerSettings,
+    NotificationAlertsContainerSettings? notificationAlertContainerSettings,
     PopupAlertDecoration? popupAlertDecoration,
     Color? scrimColor,
   }) {
@@ -169,6 +207,8 @@ class LnAlertsThemeData {
       errorIcon: errorIcon ?? this.errorIcon,
       errorColors: errorColors ?? this.errorColors,
       flatAlertDecoration: flatAlertDecoration ?? this.flatAlertDecoration,
+      flatAlertsContainerSettings:
+          flatAlertsContainerSettings ?? this.flatAlertsContainerSettings,
       notificationAlertDecoration:
           notificationAlertDecoration ?? this.notificationAlertDecoration,
       notificationAlertContainerSettings: notificationAlertContainerSettings ??

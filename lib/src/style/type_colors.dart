@@ -37,7 +37,7 @@ class LnAlertColors {
 
   const LnAlertColors.successDark({
     this.background = const Color(0xFF198343),
-    this.foreground = const Color(0xFFA8F1C6),
+    this.foreground = const Color(0xFFD2F8E2),
   });
 
   const LnAlertColors.warningLight({
