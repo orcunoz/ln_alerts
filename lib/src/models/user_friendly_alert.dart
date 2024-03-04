@@ -1,22 +1,29 @@
 import 'alert_type.dart';
 
-mixin UserFriendlyAlert {
-  UserFriendlyAlertData get alertData;
+abstract class UserFriendlyAlertOwner {
+  UserFriendlyAlert get userFriendlyAlert;
 
   @override
-  String toString() => "UserFriendlyAlert: $alertData";
+  String toString() => "UserFriendlyAlert: $userFriendlyAlert";
 }
 
-final class UserFriendlyAlertData {
-  final String? title;
-  final String message;
-  final AlertType type;
-
-  const UserFriendlyAlertData({
+class UserFriendlyAlert {
+  const UserFriendlyAlert({
     this.title,
     required this.message,
     required this.type,
   });
+
+  final String? title;
+  final String message;
+  final AlertType type;
+
+  static String autoDetectMessage(Object? data, String ifNot) =>
+      data is UserFriendlyAlert
+          ? data.message
+          : data is UserFriendlyAlertOwner
+              ? data.userFriendlyAlert.message
+              : ifNot;
 
   @override
   String toString() => "($type) ${title == null ? "" : "$title: "}$message";

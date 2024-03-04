@@ -6,8 +6,11 @@ class PopupAlert extends LnAlertWidget<PopupAlertDecoration> {
     required super.alert,
     super.decoration = const PopupAlertDecoration(),
     super.onTap,
+    this.fill = false,
     super.buttons = const [],
-  }) : super(widgetType: AlertWidget.popup);
+  }) : super(displayType: AlertDisplayType.popup);
+
+  final bool fill;
 
   @override
   Widget build(BuildContext context) {
@@ -27,10 +30,21 @@ class PopupAlert extends LnAlertWidget<PopupAlertDecoration> {
         SizedBox(height: 8),
         if (decoration.titleWidget != null) decoration.titleWidget!,
         decoration.textWidget,
-        for (var button in buttons)
-          if (button != buttons.last) button
+        SizedBox(height: 4),
+        for (var button in buttons) button
       ],
     );
+
+    if (fill) {
+      child = Center(
+        child: child,
+      );
+    } else if (decoration.padding != EdgeInsets.zero) {
+      child = Padding(
+        padding: decoration.padding,
+        child: child,
+      );
+    }
 
     child = _buildContainer(context, decoration, child);
 
@@ -45,7 +59,7 @@ class PopupAlert extends LnAlertWidget<PopupAlertDecoration> {
   }
 
   PopupAlert.noResultsFound({
-    PopupAlertDecoration decoration = const PopupAlertDecoration(),
+    PopupAlertDecoration decoration = const PopupAlertDecoration.frameless(),
     List<LnAlertActionButton> buttons = const [],
   }) : this(
           decoration: decoration,

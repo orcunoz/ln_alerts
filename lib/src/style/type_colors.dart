@@ -1,4 +1,4 @@
-part of 'theme_data.dart';
+part of 'theme.dart';
 
 const Map<(Brightness, AlertType), LnAlertColors> _defaultTypeColors = {
   (Brightness.light, AlertType.info): LnAlertColors.infoLight(),

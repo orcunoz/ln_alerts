@@ -7,7 +7,7 @@ class NotificationAlert extends LnAlertWidget<NotificationAlertDecoration> {
     super.decoration,
     super.onTap,
     super.buttons = const [],
-  }) : super(widgetType: AlertWidget.notification);
+  }) : super(displayType: AlertDisplayType.notification);
 
   NotificationAlert.custom({
     super.key,
@@ -19,11 +19,12 @@ class NotificationAlert extends LnAlertWidget<NotificationAlertDecoration> {
     super.decoration,
   }) : super(
           alert: LnAlert(
+            type: AlertType.info,
             message: message,
             title: title,
             icon: icon,
           ),
-          widgetType: AlertWidget.notification,
+          displayType: AlertDisplayType.notification,
         );
 
   NotificationAlert.byType({
@@ -42,7 +43,7 @@ class NotificationAlert extends LnAlertWidget<NotificationAlertDecoration> {
             title: title,
             icon: icon,
           ),
-          widgetType: AlertWidget.notification,
+          displayType: AlertDisplayType.notification,
         );
 
   @override
@@ -61,14 +62,25 @@ class NotificationAlert extends LnAlertWidget<NotificationAlertDecoration> {
       );
     }
 
-    child = SpacedRow(
-      spacing: 8,
-      children: [
-        Icon(decoration.icon, color: decoration.gaugesColor),
-        Expanded(child: child),
-        ...getEffectiveButtons(decoration.gaugesColor),
-      ],
+    child = ButtonTheme(
+      minWidth: kMinInteractiveDimension,
+      child: Row(
+        children: [
+          Icon(decoration.icon, color: decoration.gaugesColor),
+          SizedBox(width: 10),
+          Expanded(child: child),
+          SizedBox(width: math.max(8, decoration.padding.right)),
+          ...getEffectiveButtons(decoration.gaugesColor),
+        ],
+      ),
     );
+
+    if (decoration.padding != EdgeInsets.zero) {
+      child = Padding(
+        padding: decoration.padding.copyWith(right: 0),
+        child: child,
+      );
+    }
 
     return _buildContainer(context, decoration, child);
   }

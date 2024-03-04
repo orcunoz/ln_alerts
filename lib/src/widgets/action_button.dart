@@ -1,13 +1,9 @@
+import 'dart:ui';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 class LnAlertActionButton extends StatelessWidget {
-  final IconData? icon;
-  final String? text;
-  final void Function()? onPressed;
-  final ButtonStyle? style;
-
-  final bool removeButton;
-
   const LnAlertActionButton({
     IconData? icon,
     String? text,
@@ -15,51 +11,74 @@ class LnAlertActionButton extends StatelessWidget {
   }) : this._(
           icon: icon,
           text: text,
+          style: null,
           onPressed: onPressed,
+          removeButton: false,
+        );
+
+  const LnAlertActionButton.remove({
+    String? text,
+  }) : this._(
+          icon: Icons.close_rounded,
+          text: text,
+          style: null,
+          onPressed: null,
+          removeButton: true,
         );
 
   const LnAlertActionButton._({
-    this.icon,
-    this.text,
-    this.onPressed,
-    this.style,
-    this.removeButton = false,
+    required this.icon,
+    required this.text,
+    required this.onPressed,
+    required this.style,
+    required this.removeButton,
   }) : assert(icon != null || text != null);
+
+  final IconData? icon;
+  final String? text;
+  final ButtonStyle? style;
+  final VoidCallback? onPressed;
+
+  final bool removeButton;
 
   LnAlertActionButton copyWith({
     IconData? icon,
     String? text,
-    void Function()? onPressed,
+    VoidCallback? onPressed,
     ButtonStyle? style,
   }) =>
       LnAlertActionButton._(
         icon: icon ?? this.icon,
         text: text ?? this.text,
-        onPressed: onPressed ?? this.onPressed,
         style: style ?? this.style,
+        onPressed: onPressed ?? this.onPressed,
+        removeButton: removeButton,
       );
+
+  Widget _buildChild(BuildContext context) {
+    final icon = this.icon == null ? null : Icon(this.icon!);
+    final text = this.text == null ? null : Text(this.text!);
+    if (icon != null && text != null) {
+      final double scale = MediaQuery.textScalerOf(context).scale(1);
+      final double gap =
+          scale <= 1 ? 8 : lerpDouble(8, 4, math.min(scale - 1, 1))!;
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[icon, SizedBox(width: gap), Flexible(child: text)],
+      );
+    } else if (icon != null) {
+      return icon;
+    } else {
+      return text!;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (icon != null && text != null) {
-      return TextButton.icon(
-        icon: Icon(icon!),
-        label: Text(text!),
-        style: style,
-        onPressed: onPressed,
-      );
-    } else if (icon != null) {
-      return IconButton(
-        icon: Icon(icon),
-        style: style,
-        onPressed: onPressed,
-      );
-    } else {
-      return TextButton(
-        child: Text(text!),
-        style: style,
-        onPressed: onPressed,
-      );
-    }
+    return TextButton(
+      style: style,
+      onPressed: onPressed,
+      child: _buildChild(context),
+    );
   }
 }

@@ -1,6 +1,6 @@
 name: ln_alerts
 description: LnAlerts, creating and managing alerts
-version: 0.8.5
+version: 0.9.1
 repository: https://github.com/orcunoz/ln_alerts
 publish_to: none
 
@@ -13,10 +13,14 @@ dependencies:
 
   stack_trace:
   ln_core:
+    #path: ../ln_core
     git:
       url: https://github.com/orcunoz/ln_core
       ref: main
 
+flutter:
+  uses-material-design: true
+
 dev_dependencies:
-  lints: ^2.0.0
+  lints: ^3.0.0
   test: ^1.21.0

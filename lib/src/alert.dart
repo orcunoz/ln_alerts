@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
 
-import 'host.dart';
+import 'container.dart';
 import 'models/alert_type.dart';
-import 'models/alert_widget.dart';
+import 'models/display_type.dart';
 import 'models/user_friendly_alert.dart';
+import 'widgets/action_button.dart';
 
 class LnAlert {
-  final AlertType? type;
-  final String? title;
-  final String? message;
-  final IconData? icon;
-
   const LnAlert({
-    this.type,
+    required this.type,
     this.title,
     this.message,
     this.icon,
-  }) : assert(type != null || message != null);
+    this.buttons = const [LnAlertActionButton.remove()],
+  }); // : assert(type != null || message != null);
+
+  final AlertType type;
+  final String? title;
+  final String? message;
+  final IconData? icon;
+  final List<LnAlertActionButton> buttons;
 
   const LnAlert.info(
     String? message, {
@@ -63,39 +66,44 @@ class LnAlert {
         );
 
   LnAlert.userFriendly(UserFriendlyAlert data)
-      : this.userFriendlyData(data.alertData);
-
-  LnAlert.userFriendlyData(UserFriendlyAlertData data)
       : this(
           type: data.type,
           title: data.title,
           message: data.message,
         );
 
-  factory LnAlert.successAutoDetect(dynamic data) =>
-      data != null && data is UserFriendlyAlert
-          ? LnAlert.userFriendly(data)
-          : data != null && data is UserFriendlyAlertData
-              ? LnAlert.userFriendlyData(data)
-              : LnAlert(type: AlertType.success);
+  factory LnAlert.successAutoDetect(dynamic data) {
+    UserFriendlyAlert? userFriendly;
 
-  factory LnAlert.errorAutoDetect(dynamic data) =>
-      data != null && data is UserFriendlyAlert
-          ? LnAlert.userFriendly(data)
-          : data != null && data is UserFriendlyAlertData
-              ? LnAlert.userFriendlyData(data)
-              : LnAlert(type: AlertType.error);
+    if (data is UserFriendlyAlertOwner) {
+      userFriendly = data.userFriendlyAlert;
+    } else if (data is UserFriendlyAlert) {
+      userFriendly = data;
+    }
+
+    return LnAlert.success(userFriendly?.message, title: userFriendly?.title);
+  }
+
+  factory LnAlert.errorAutoDetect(dynamic data) {
+    UserFriendlyAlert? userFriendly = data is UserFriendlyAlertOwner
+        ? data.userFriendlyAlert
+        : data is UserFriendlyAlert
+            ? data
+            : null;
+
+    return LnAlert.error(userFriendly?.message, title: userFriendly?.title);
+  }
 
   void showAt(
     BuildContext context, {
-    AlertWidget? widgetType,
-    Duration? duration,
+    AlertDisplayType? displayType,
+    Duration? duration = const Duration(seconds: 10),
     Object? unique,
   }) =>
-      LnAlertHost.of(context).show(
+      LnAlerts.of(context).show(
         this,
         duration: duration,
-        widgetType: widgetType,
+        displayType: displayType,
         unique: unique,
       );
 }
