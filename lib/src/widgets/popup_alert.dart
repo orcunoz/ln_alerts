@@ -16,6 +16,7 @@ class PopupAlert extends LnAlertWidget<PopupAlertDecoration> {
   Widget build(BuildContext context) {
     final decoration = _prepareDecoration(context);
     final buttons = getEffectiveButtons(decoration.gaugesColor);
+    final removeButton = buttons.where((b) => b.removeButton).firstOrNull;
 
     Widget child = Column(
       mainAxisSize: MainAxisSize.min,
@@ -31,7 +32,7 @@ class PopupAlert extends LnAlertWidget<PopupAlertDecoration> {
         if (decoration.titleWidget != null) decoration.titleWidget!,
         decoration.textWidget,
         SizedBox(height: 4),
-        for (var button in buttons) button
+        for (var button in buttons.where((b) => !b.removeButton)) button
       ],
     );
 
@@ -43,6 +44,25 @@ class PopupAlert extends LnAlertWidget<PopupAlertDecoration> {
       child = Padding(
         padding: decoration.padding,
         child: child,
+      );
+    }
+
+    if (removeButton != null) {
+      child = Stack(
+        alignment: Alignment.center,
+        children: [
+          child,
+          Positioned(
+            top: 0,
+            right: 0,
+            child: removeButton.copyWith(
+              style: removeButton.style?.copyWith(
+                fixedSize: MaterialStatePropertyAll(
+                    Size.square(kMinInteractiveDimension)),
+              ),
+            ),
+          ),
+        ],
       );
     }
 
@@ -59,10 +79,10 @@ class PopupAlert extends LnAlertWidget<PopupAlertDecoration> {
   }
 
   PopupAlert.noResultsFound({
-    PopupAlertDecoration decoration = const PopupAlertDecoration.frameless(),
+    required Color color,
     List<LnAlertActionButton> buttons = const [],
   }) : this(
-          decoration: decoration,
+          decoration: PopupAlertDecoration.frameless(foregroundColor: color),
           alert: LnAlert.info(
             LnLocalizations.current.noResultsFound,
             icon: Icons.web_asset_off_rounded,

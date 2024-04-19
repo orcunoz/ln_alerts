@@ -33,7 +33,7 @@ class FlatAlertsContainerSettings {
     this.borderSide = BorderSide.none,
     this.borderRadius = BorderRadius.zero,
     this.insertingUnderContent = 0,
-    this.horizontalMargin = 0,
+    this.margin = EdgeInsets.zero,
     this.dividerWidth = .5,
   }) : assert(insertingUnderContent >= .0);
 
@@ -41,7 +41,7 @@ class FlatAlertsContainerSettings {
   final BorderSide borderSide;
   final BorderRadiusGeometry borderRadius;
   final double insertingUnderContent;
-  final double? horizontalMargin;
+  final EdgeInsetsGeometry? margin;
   final double? dividerWidth;
 
   FlatAlertsContainerSettings copyWith({
@@ -49,7 +49,7 @@ class FlatAlertsContainerSettings {
     BorderSide? borderSide,
     BorderRadiusGeometry? borderRadius,
     double? insertingUnderContent,
-    double? horizontalMargin,
+    EdgeInsetsGeometry? margin,
     double? dividerWidth,
   }) {
     return FlatAlertsContainerSettings(
@@ -58,7 +58,7 @@ class FlatAlertsContainerSettings {
       borderRadius: borderRadius ?? this.borderRadius,
       insertingUnderContent:
           insertingUnderContent ?? this.insertingUnderContent,
-      horizontalMargin: horizontalMargin ?? this.horizontalMargin,
+      margin: margin ?? this.margin,
       dividerWidth: dividerWidth ?? this.dividerWidth,
     );
   }

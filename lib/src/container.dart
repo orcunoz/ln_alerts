@@ -34,13 +34,8 @@ class LnAlerts extends InheritedWidget {
       controller != oldWidget.controller;
 
   static LnAlertsController of(BuildContext context) {
-    final alertsController = maybeOf(context) ?? rootController;
-    assert(alertsController != null);
-    return alertsController!;
-  }
-
-  static LnAlertsController? maybeOf(BuildContext context) {
-    return context.getInheritedWidgetOfExactType<LnAlerts>()?.controller;
+    return context.getInheritedWidgetOfExactType<LnAlerts>()?.controller ??
+        rootController;
   }
 }
 
@@ -57,7 +52,7 @@ class LnAlertsArea extends StatefulWidget {
   LnAlertsArea.scope({
     super.key,
     this.controller,
-    this.containers = const [],
+    required this.containers,
     this.progressOverlay = true,
     this.progressView = progressIndicatorBox,
     required this.child,
@@ -70,7 +65,9 @@ class LnAlertsArea extends StatefulWidget {
   final Widget progressView;
   final Widget child;
 
-  static const progressIndicatorBox = Center(child: ProgressIndicatorBox());
+  static const progressIndicatorBox = Center(
+    child: CircularProgressIndicator(),
+  );
   static const linearProgressIndicator = Align(
     alignment: Alignment.topCenter,
     child: LinearProgressIndicator(),
@@ -87,7 +84,6 @@ class LnAlertsArea extends StatefulWidget {
           settings: settings ?? alertsTheme.flatAlertsContainerSettings,
           alertDecoration: alertsTheme.flatAlertDecoration,
           scopeController: LnAlerts.of(context),
-          safePadding: MediaQuery.of(context).safePadding,
           primary: primary,
           root: false,
         );
@@ -157,10 +153,9 @@ class _LnAlertsAreaScopeState extends _LnAlertsAreaState {
 
   @override
   void dispose() {
-    super.dispose();
-
     _internalController?.dispose();
     _internalController = null;
+    super.dispose();
   }
 
   @override
@@ -180,12 +175,19 @@ class _LnAlertsAreaState extends State<LnAlertsArea> {
   late ThemeData _theme;
   late LnAlertsTheme _alertsTheme;
 
+  late LnAlertsController? parent;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
     _theme = Theme.of(context);
     _alertsTheme = _theme.alertsTheme;
+    parent = this is _LnAlertsAreaScopeState &&
+            (this as _LnAlertsAreaScopeState).controller ==
+                LnAlerts._rootController
+        ? null
+        : LnAlerts.of(context);
   }
 
   Widget _buildInScope(BuildContext context, LnAlertsController controller) {
@@ -209,7 +211,7 @@ class _LnAlertsAreaState extends State<LnAlertsArea> {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        if (underInset == 0) RepaintBoundary(child: child),
+        if (underInset == 0) child,
         if (widget.containers.contains(AlertDisplayType.flat))
           AnimatedPositioned(
             duration: _animationDuration,
@@ -236,7 +238,7 @@ class _LnAlertsAreaState extends State<LnAlertsArea> {
               ),
             ),
           ),
-        if (underInset > 0) child,
+        if (underInset != 0) child,
         if (widget.containers.contains(AlertDisplayType.notification))
           Positioned.fill(
             child: NotificationAlertsContainer._(
@@ -257,18 +259,24 @@ class _LnAlertsAreaState extends State<LnAlertsArea> {
             ),
           ),
         if (widget.progressOverlay)
-          ValueListenableBuilder(
-            valueListenable: controller.progressListenable,
-            builder: (context, inProgress, child) {
-              return Visibility(
-                visible: inProgress,
-                child: child!,
-              );
-            },
-            child: Positioned.fill(
+          Positioned.fill(
+            child: ListenableBuilder(
+              listenable: parent == null
+                  ? controller.progressListenable
+                  : Listenable.merge([
+                      controller.progressListenable,
+                      parent!.progressListenable,
+                    ]),
+              builder: (context, child) {
+                return Visibility(
+                  visible:
+                      !(parent?.inProgress ?? false) && controller.inProgress,
+                  child: child!,
+                );
+              },
               child: ColoredBox(
-                color: (_alertsTheme.scrimColor ?? _theme.colorScheme.scrim)
-                    .withOpacity(.1),
+                color: _alertsTheme.scrimColor ??
+                    _theme.colorScheme.scrim.withOpacity(.1),
                 child: widget.progressView,
               ),
             ),

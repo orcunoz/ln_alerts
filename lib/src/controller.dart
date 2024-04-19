@@ -16,7 +16,8 @@ class LnAlertsController with ChangeNotifier {
 
   void _refreshPrimaryContainer() {
     _primaryContainer =
-        _registeredContainers.where((c) => c.widget.primary).lastOrNull;
+        _registeredContainers.where((e) => !e.widget.root).lastOrNull ??
+            _registeredContainers.where((c) => c.widget.primary).lastOrNull;
   }
 
   void _register(_AlertsContainerState state) {
@@ -27,9 +28,10 @@ class LnAlertsController with ChangeNotifier {
         .where((c) => c.widget.displayType == state.widget.displayType);
 
     if (targetContainers.length > 1) {
-      final rootContainer = targetContainers.firstWhere((c) => c.widget.root);
+      final rootContainer =
+          targetContainers.where((c) => c.widget.root).firstOrNull;
 
-      rootContainer.rebuild(() {
+      rootContainer?.rebuild(() {
         rootContainer.enabled = false;
       });
     }
@@ -68,7 +70,9 @@ class LnAlertsController with ChangeNotifier {
 
     if (result) {
       LnSchedulerCallbacks.endOfFrame(() {
-        _progressNotifier.value = _progressUniques.isNotEmpty;
+        if (_progressNotifier.hasListeners) {
+          _progressNotifier.value = _progressUniques.isNotEmpty;
+        }
       });
     }
 
@@ -82,6 +86,13 @@ class LnAlertsController with ChangeNotifier {
     }
 
     return removedRegistry?.alert;
+  }
+
+  @override
+  void notifyListeners() {
+    if (hasListeners) {
+      super.notifyListeners();
+    }
   }
 
   void show(
@@ -141,9 +152,8 @@ class LnAlertsController with ChangeNotifier {
 
   @override
   void dispose() {
-    super.dispose();
-
     _progressNotifier.dispose();
+    super.dispose();
   }
 }
 

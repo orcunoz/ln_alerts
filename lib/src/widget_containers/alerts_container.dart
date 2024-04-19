@@ -49,9 +49,8 @@ class _AlertsContainerState extends LnState<_AlertsContainer> {
 
   @override
   void dispose() {
-    super.dispose();
-
     widget.scopeController._unregister(this);
+    super.dispose();
   }
 
   @override

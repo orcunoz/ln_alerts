@@ -1,4 +1,3 @@
-import 'package:ln_alerts/ln_alerts.dart';
 import "package:stack_trace/stack_trace.dart";
 import 'package:flutter/material.dart';
 import 'package:ln_core/ln_core.dart';
@@ -6,65 +5,9 @@ import 'package:ln_core/ln_core.dart';
 import '../alert.dart';
 import '../container.dart';
 import '../models/display_type.dart';
+import '../widgets/action_button.dart';
 
 extension LnAlertFutureExtensions<T> on Future<T> {
-  /*Future<T> manageAlerts(
-    BuildContext context, {
-    Duration? duration,
-    AlertDisplayType? displayType,
-  }) {
-    final unique = Trace.current().frames[1].toString();
-    final container = LnAlerts.of(context);
-    return _manageSuccessAlerts(
-      container,
-      duration: duration,
-      displayType: displayType,
-      unique: unique,
-    )._manageErrorAlerts(
-      container,
-      duration: duration,
-      displayType: displayType,
-      unique: unique,
-    );
-  }
-
-  Future<T> manageSuccessAlerts(
-    BuildContext context, {
-    Duration? duration,
-    AlertDisplayType? displayType,
-  }) {
-    final unique = Trace.current().frames[1].toString();
-    final container = LnAlerts.of(context);
-    return _manageSuccessAlerts(
-      container,
-      duration: duration,
-      displayType: displayType,
-      unique: unique,
-    );
-  }
-
-  Future<T> manageErrorAlerts(
-    BuildContext context, {
-    Duration? duration,
-    AlertDisplayType? displayType,
-  }) {
-    final unique = Trace.current().frames[1].toString();
-    final container = LnAlerts.of(context);
-    return _manageErrorAlerts(
-      container,
-      duration: duration,
-      displayType: displayType,
-      unique: unique,
-    );
-  }
-
-  Future<T> manageProgressIndicator(BuildContext context) {
-    return _manageProgressIndicator(
-      LnAlerts.of(context),
-      unique: Trace.current().frames[1].toString(),
-    );
-  }*/
-
   Future<T> _manageProgressIndicator(
     LnAlertsController controller, {
     required Object unique,
@@ -104,7 +47,6 @@ extension LnAlertFutureExtensions<T> on Future<T> {
     if (unique != null) controller.removeAlert(unique);
 
     return catchError((error, stackTrace) {
-      Log.e(error, stackTrace: stackTrace);
       controller.show(
         LnAlert.errorAutoDetect(error),
         duration: duration,
@@ -112,7 +54,7 @@ extension LnAlertFutureExtensions<T> on Future<T> {
         buttons: buttons,
         unique: unique,
       );
-      throw error;
+      //throw error;
     });
   }
 
@@ -123,12 +65,12 @@ extension LnAlertFutureExtensions<T> on Future<T> {
     bool progress = true,
     void Function()? retry,
     Duration? errorDuration,
-    AlertDisplayType? errorDisplayType = AlertDisplayType.popup,
+    AlertDisplayType? errorDisplayType,
     Duration? successDuration,
     AlertDisplayType? successDisplayType,
   }) =>
-      setManager(
-        LnAlerts.of(context),
+      manageAlerts(
+        context,
         error: error,
         success: success,
         progress: progress,
@@ -150,14 +92,14 @@ extension LnAlertFutureExtensions<T> on Future<T> {
     BuildContext context, {
     bool error = true,
     bool success = true,
-    bool progress = true,
+    bool progress = false,
     Duration? errorDuration,
-    AlertDisplayType? errorDisplayType = AlertDisplayType.flat,
+    AlertDisplayType? errorDisplayType,
     Duration? successDuration,
-    AlertDisplayType? successDisplayType = AlertDisplayType.flat,
+    AlertDisplayType? successDisplayType,
   }) =>
-      setManager(
-        LnAlerts.of(context),
+      manageAlerts(
+        context,
         error: error,
         success: success,
         progress: progress,
@@ -167,8 +109,8 @@ extension LnAlertFutureExtensions<T> on Future<T> {
         successDisplayType: successDisplayType,
       );
 
-  Future<T> setManager(
-    LnAlertsController controller, {
+  Future<T> manageAlerts(
+    BuildContext context, {
     bool error = false,
     bool success = false,
     bool progress = false,
@@ -180,11 +122,12 @@ extension LnAlertFutureExtensions<T> on Future<T> {
     Duration? successDuration,
     AlertDisplayType? successDisplayType,
   }) {
+    final controller = LnAlerts.of(context);
     final unique = Trace.current().frames[1].toString();
     Future<T> future = this;
 
     if (error) {
-      future = future._manageErrorAlerts(
+      future._manageErrorAlerts(
         controller,
         duration: errorDuration,
         displayType: errorDisplayType,
@@ -194,7 +137,7 @@ extension LnAlertFutureExtensions<T> on Future<T> {
     }
 
     if (success) {
-      future = future._manageSuccessAlerts(
+      future._manageSuccessAlerts(
         controller,
         duration: successDuration,
         displayType: successDisplayType,
@@ -203,7 +146,7 @@ extension LnAlertFutureExtensions<T> on Future<T> {
     }
 
     if (progress) {
-      future = future._manageProgressIndicator(
+      future._manageProgressIndicator(
         controller,
         unique: unique,
       );

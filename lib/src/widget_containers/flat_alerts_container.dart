@@ -7,26 +7,20 @@ class FlatAlertsContainer extends _AlertsContainer<FlatAlertDecoration> {
     required super.primary,
     required this.settings,
     required super.root,
-    this.safePadding,
   }) : super(displayType: AlertDisplayType.flat);
 
   final FlatAlertsContainerSettings settings;
-  final EdgeInsets? safePadding;
 
   @override
   Widget buildContainer(ThemeData theme, FlatAlertDecoration alertDecoration,
       List<AlertRegistry> alertRegistries) {
     final alertWidgets = [
-      for (final (index, registry) in alertRegistries.indexed)
+      for (final registry in alertRegistries)
         FlatAlert(
           alert: registry.alert,
           decoration: alertDecoration,
           buttons: registry.buttons,
           position: settings.position,
-        ).copyWith(
-          bottomPadding: (index == alertRegistries.length - 1)
-              ? safePadding?.bottom ?? .0
-              : .0,
         ),
     ];
 
@@ -57,10 +51,9 @@ class FlatAlertsContainer extends _AlertsContainer<FlatAlertDecoration> {
       ),
     );
 
-    if (settings.horizontalMargin != null) {
+    if (alertRegistries.isNotEmpty && settings.margin != null) {
       child = Padding(
-        padding: (safePadding ?? EdgeInsets.zero).copyWith(bottom: 0) +
-            EdgeInsets.symmetric(horizontal: settings.horizontalMargin!),
+        padding: settings.margin!,
         child: child,
       );
     }

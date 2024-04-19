@@ -32,8 +32,12 @@ class PopupAlertsContainer extends _AlertsContainer<PopupAlertDecoration> {
         children.length - 1,
         Positioned.fill(
           child: ColoredBox(
-            color: theme.alertsTheme.scrimColor ??
-                theme.colorScheme.surface.withOpacity(.5),
+            color: theme.alertsTheme
+                .colorsOf(alertRegistries.last.alert.type)
+                .background
+                .withOpacity(.2),
+            /* theme.alertsTheme.scrimColor ??
+                theme.colorScheme.scrim.withOpacity(.1) */
           ),
         ),
       );

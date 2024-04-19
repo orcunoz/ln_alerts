@@ -11,21 +11,9 @@ class FlatAlert extends LnAlertWidget<FlatAlertDecoration> {
     super.onTap,
     required this.position,
     super.buttons = const [],
-  })  : bottomPadding = null,
-        super(displayType: AlertDisplayType.flat);
-
-  const FlatAlert._({
-    super.key,
-    required super.alert,
-    super.decoration,
-    super.onTap,
-    required this.position,
-    super.buttons = const [],
-    this.bottomPadding,
   }) : super(displayType: AlertDisplayType.flat);
 
   final FlatAlertPosition? position;
-  final double? bottomPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -44,14 +32,11 @@ class FlatAlert extends LnAlertWidget<FlatAlertDecoration> {
       );
     }
 
-    final padding =
-        decoration.padding + EdgeInsets.only(bottom: bottomPadding ?? .0);
-
     child = Row(
       children: [
         Flexible(
           child: Padding(
-            padding: padding.copyWith(right: 0),
+            padding: decoration.padding.copyWith(right: 0),
             child: Row(
               children: [
                 Icon(
@@ -79,16 +64,14 @@ class FlatAlert extends LnAlertWidget<FlatAlertDecoration> {
     FlatAlertDecoration? decoration,
     AlertOnTap? onTap,
     List<LnAlertActionButton>? buttons,
-    double? bottomPadding,
   }) {
-    return FlatAlert._(
+    return FlatAlert(
       key: key,
       position: position ?? this.position,
       alert: alert ?? this.alert,
       decoration: decoration ?? _decoration,
       onTap: onTap ?? this.onTap,
       buttons: buttons ?? this.buttons,
-      bottomPadding: bottomPadding ?? this.bottomPadding,
     );
   }
 }
