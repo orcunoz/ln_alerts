@@ -11,9 +11,11 @@ class FlatAlert extends LnAlertWidget<FlatAlertDecoration> {
     super.onTap,
     required this.position,
     super.buttons = const [],
+    this.applySafeBottomPadding = false,
   }) : super(displayType: AlertDisplayType.flat);
 
   final FlatAlertPosition? position;
+  final bool applySafeBottomPadding;
 
   @override
   Widget build(BuildContext context) {

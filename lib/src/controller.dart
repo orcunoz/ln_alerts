@@ -79,7 +79,7 @@ class LnAlertsController with ChangeNotifier {
     return result;
   }
 
-  LnAlert? removeAlert(Object unique) {
+  LnAlert? removeAlerts(Object unique) {
     var removedRegistry = _alerts.remove(unique);
     if (removedRegistry != null) {
       LnSchedulerCallbacks.endOfFrame(notifyListeners);
@@ -97,7 +97,7 @@ class LnAlertsController with ChangeNotifier {
 
   void show(
     final LnAlert alert, {
-    final Duration? duration = const Duration(seconds: 10),
+    final Duration? duration,
     final AlertDisplayType? displayType,
     final Object? unique,
     final List<LnAlertActionButton> buttons = const [
@@ -129,7 +129,7 @@ class LnAlertsController with ChangeNotifier {
       buttons: [
         for (final button in buttons)
           if (button.removeButton)
-            button.copyWith(onPressed: () => removeAlert(unique))
+            button.copyWith(onPressed: () => removeAlerts(unique))
           else
             button
       ],
@@ -139,7 +139,7 @@ class LnAlertsController with ChangeNotifier {
 
     if (duration != null && duration != Duration.zero) {
       Future.delayed(duration, () {
-        removeAlert(unique);
+        removeAlerts(unique);
       });
     }
 

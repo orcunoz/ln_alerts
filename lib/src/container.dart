@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:ln_alerts/src/alert.dart';
 import 'package:ln_core/ln_core.dart';
 
+import 'models/alert_type.dart';
 import 'models/display_type.dart';
 import 'style/theme.dart';
 import 'style/widget_decoration.dart';
@@ -17,6 +18,15 @@ part 'widget_containers/notification_alerts_container.dart';
 part 'widget_containers/popup_alerts_container.dart';
 
 part 'controller.dart';
+
+const bool _kDebugShowArea = false;
+const bool _kDebugAlwaysInProgress = false;
+const LnAlert? _kDebugAPrimaryAlert = null;
+/*LnAlert(
+  type: AlertType.error,
+  title: "Debug Alert",
+  message: "Alert message .....",
+);*/
 
 class LnAlerts extends InheritedWidget {
   const LnAlerts._({
@@ -160,10 +170,20 @@ class _LnAlertsAreaScopeState extends _LnAlertsAreaState {
 
   @override
   Widget build(BuildContext context) {
-    return LnAlerts._(
+    Widget result = LnAlerts._(
       controller: controller,
       child: _buildInScope(context, controller),
     );
+
+    if (_kDebugShowArea) {
+      result = DebugAreaBounds(
+        color: Colors.teal,
+        drawOver: true,
+        child: result,
+      );
+    }
+
+    return result;
   }
 }
 
@@ -176,6 +196,17 @@ class _LnAlertsAreaState extends State<LnAlertsArea> {
   late LnAlertsTheme _alertsTheme;
 
   late LnAlertsController? parent;
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (_kDebugAPrimaryAlert != null) {
+      (this as _LnAlertsAreaScopeState)
+          .controller
+          .show(_kDebugAPrimaryAlert!, duration: null);
+    }
+  }
 
   @override
   void didChangeDependencies() {
@@ -269,8 +300,8 @@ class _LnAlertsAreaState extends State<LnAlertsArea> {
                     ]),
               builder: (context, child) {
                 return Visibility(
-                  visible:
-                      !(parent?.inProgress ?? false) && controller.inProgress,
+                  visible: _kDebugAlwaysInProgress ||
+                      (parent?.inProgress != true && controller.inProgress),
                   child: child!,
                 );
               },
@@ -287,6 +318,15 @@ class _LnAlertsAreaState extends State<LnAlertsArea> {
 
   @override
   Widget build(BuildContext context) {
-    return _buildInScope(context, LnAlerts.of(context));
+    Widget result = _buildInScope(context, LnAlerts.of(context));
+
+    if (_kDebugShowArea) {
+      result = DebugAreaBounds(
+        color: Colors.teal,
+        drawOver: true,
+        child: result,
+      );
+    }
+    return result;
   }
 }

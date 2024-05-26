@@ -26,7 +26,9 @@ class FlatAlertsContainer extends _AlertsContainer<FlatAlertDecoration> {
 
     final divider = settings.dividerWidth != null && settings.dividerWidth != 0
         ? PrecisionDivider(
-            color: settings.borderSide.color,
+            color: settings.borderSide == BorderSide.none
+                ? Colors.transparent
+                : settings.borderSide.color,
             height: settings.dividerWidth,
           )
         : null;

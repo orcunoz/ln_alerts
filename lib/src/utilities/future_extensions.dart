@@ -24,7 +24,7 @@ extension LnAlertFutureExtensions<T> on Future<T> {
     AlertDisplayType? displayType,
     Object? unique,
   }) {
-    if (unique != null) controller.removeAlert(unique);
+    if (unique != null) controller.removeAlerts(unique);
 
     return then((value) {
       controller.show(
@@ -44,7 +44,7 @@ extension LnAlertFutureExtensions<T> on Future<T> {
     List<LnAlertActionButton> buttons = const [LnAlertActionButton.remove()],
     Object? unique,
   }) {
-    if (unique != null) controller.removeAlert(unique);
+    if (unique != null) controller.removeAlerts(unique);
 
     return catchError((error, stackTrace) {
       controller.show(

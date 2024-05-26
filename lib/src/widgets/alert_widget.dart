@@ -114,7 +114,7 @@ abstract class LnAlertWidget<T extends WidgetDecoration>
     final BorderSide? borderSide = decoration.borderWidth == 0
         ? null
         : BorderSide(
-            color: backgroundColor.blend(foregroundColor, 30),
+            color: theme.borderColor(backgroundColor, sharpness: 3),
             width: decoration.borderWidth ?? .5,
           );
     final BorderRadiusGeometry borderRadius =
@@ -176,9 +176,20 @@ abstract class LnAlertWidget<T extends WidgetDecoration>
       );
     }
 
-    final position = displayType == AlertDisplayType.flat
-        ? (this as FlatAlert).position
-        : null;
+    final FlatAlertPosition? position;
+    if (displayType == AlertDisplayType.flat) {
+      final flatAlert = (this as FlatAlert);
+      position = flatAlert.position;
+
+      if (flatAlert.applySafeBottomPadding) {
+        child = Padding(
+          padding: MediaQuery.of(context).safeBottomPadding,
+          child: child,
+        );
+      }
+    } else {
+      position = null;
+    }
     final borderSide = computedDecoration.borderSide ?? BorderSide.none;
 
     return Material(

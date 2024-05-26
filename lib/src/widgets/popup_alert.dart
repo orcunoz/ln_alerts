@@ -84,7 +84,7 @@ class PopupAlert extends LnAlertWidget<PopupAlertDecoration> {
   }) : this(
           decoration: PopupAlertDecoration.frameless(foregroundColor: color),
           alert: LnAlert.info(
-            LnLocalizations.current.noResultsFound,
+            LnLocalizations.current.noResults,
             icon: Icons.web_asset_off_rounded,
           ),
           buttons: buttons,
